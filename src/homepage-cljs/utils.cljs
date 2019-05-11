@@ -1,4 +1,4 @@
-(ns provola.utils
+(ns homepage-cljs.utils
     (:require-macros [reagent.ratom :as ratom])
     (:require [reagent.core :as r]))
 

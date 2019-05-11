@@ -1,12 +1,12 @@
-(ns provola.favorites
+(ns homepage-cljs.favorites
     (:require [reagent.core :as r]
               [re-frame.core :as rf]
-              [provola.utils :as utils]
-              [provola.app-state]))
+              [homepage-cljs.utils :as utils]
+              [homepage-cljs.app-state]))
 
 
 
-; (provola.app-state/app-db)
+; (homepage-cljs.app-state/app-db)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

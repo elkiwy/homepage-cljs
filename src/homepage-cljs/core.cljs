@@ -1,11 +1,11 @@
-(ns provola.core
+(ns homepage-cljs.core
     (:require-macros [cljs.core.async.macros :refer [go]])
     (:require   [reagent.core :as r]
                 [re-frame.core :as rf]
                 [re-frame.db :as rfdb]
-                [provola.app-state]
-                [provola.reddit :as reddit]
-                [provola.favorites :as favs]
+                [homepage-cljs.app-state]
+                [homepage-cljs.reddit :as reddit]
+                [homepage-cljs.favorites :as favs]
                 [cljs-http.client :as http]
                 [cljs.core.async :refer [<!]]))
 
@@ -47,7 +47,7 @@
 ;; -----------------------------------------------------------------------------------------------------
 ;; Initialize app
 (defn mount-root []
-    (provola.app-state/load-state)
+    (homepage-cljs.app-state/load-state)
     (println "LOADED DB: " @rfdb/app-db)
     (r/render [main-page] (.getElementById js/document "app")))
 

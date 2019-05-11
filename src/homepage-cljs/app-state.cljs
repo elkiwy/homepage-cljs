@@ -1,6 +1,6 @@
-(ns provola.app-state
+(ns homepage-cljs.app-state
     (:require [cljs.reader :as reader]
-              [provola.utils :as utils]
+              [homepage-cljs.utils :as utils]
               [reagent.core :as r]
               [re-frame.core :as rf]
               [re-frame.db :as rfdb]

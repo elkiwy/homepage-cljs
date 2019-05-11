@@ -1,9 +1,9 @@
-(ns provola.reddit
+(ns homepage-cljs.reddit
     (:require-macros [cljs.core.async.macros :refer [go]])
     (:require   [reagent.core :as r]
                 [re-frame.core :as rf]
-                [provola.app-state :as state]
-                [provola.utils :as utils]
+                [homepage-cljs.app-state :as state]
+                [homepage-cljs.utils :as utils]
                 [cljs-http.client :as http]
                 [cljs.core.async :refer [<!]]))
 
