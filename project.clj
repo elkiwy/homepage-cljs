@@ -6,6 +6,8 @@
 
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.520"]
+                 [funcool/tubax "0.2.0"]
+                 [hickory "0.7.1"]
                  [reagent "0.8.1"]
                  [reagent-utils "0.3.2"]
                  [re-frame "0.10.6"]
