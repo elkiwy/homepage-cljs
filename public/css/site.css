@@ -109,6 +109,17 @@ input[type="button"]{
 
 /* ------------------------------------------------------------------- */
 /* RSS ITEM */
+.rss-item{
+	margin-top: 64px;
+	margin-left: 32px;
+	clear:both;
+}
+
+.rss-item h2{
+	margin-bottom: 0px;
+}
+
+
 .rss-item img{
 	width: 100px;
 	height: 100px;

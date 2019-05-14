@@ -63,6 +63,28 @@
         (get-in subreddits [name :json])))
 
 
+;rss
+(rf/reg-sub :rss-feeds
+    (fn [db _] (:rss-feeds db)))
+
+(rf/reg-sub :rss-data
+    (fn [db _] (:rss-data db)))
+
+(rf/reg-sub :rss-selected-name
+    (fn [db _] (:rss-selected db)))
+
+(rf/reg-sub :rss-selected-url
+    :<- [:rss-selected-name]
+    :<- [:rss-feeds]
+    (fn [[name feeds] _]
+        (second (first (filter #(= name (first %)) feeds)))))
+
+(rf/reg-sub :rss-selected-data
+    :<- [:rss-selected-name]
+    :<- [:rss-data]
+    (fn [[name rss-data] _]
+        (get-in rss-data [name])))
+    
 
 
 
@@ -77,7 +99,16 @@
 
 
 (rf/reg-event-db :initialize 
-    (fn [_ _] {:page-current :Favorites :subreddits {} :subreddit-selected-name "" :favs {}})) 
+    (fn [_ _] {:page-current :Favorites
+
+              :subreddits {} :subreddit-selected-name ""
+
+              :favs {}
+
+              :rss-feeds [] ;Vector of Name-Link pairs
+              :rss-selected "" ;String
+              :rss-data {} ;String - Data map
+})) 
 
 (rf/reg-event-db :replace-db
     (fn [_ [_ newdb]] newdb))
@@ -120,17 +151,47 @@
         (update-db-and-save #(utils/dissoc-in db [:favs category] name))))
 
 
+(defn remove-vec [vec item]
+    (into [] (remove #{item} vec)))
+
+;rss
+(rf/reg-event-db :rss-selected-changed
+    (fn [db [_ newRss]]
+        (update-db-and-save #(assoc db :rss-selected newRss))))
+
+(rf/reg-event-db :rss-added
+    (fn [db [_ rss]]
+        (update-db-and-save #(update-in db [:rss-feeds] conj rss))))
+
+(rf/reg-event-db :rss-removed
+    (fn [db [_ rss]]
+        (update-db-and-save #(update-in db [:rss-feeds] remove-vec rss))))
+
+(rf/reg-event-db :rss-fetched-data
+    (fn [db [_ rss newdata]]
+        (update-db-and-save #(assoc-in db [:rss-data rss] newdata))))
+
+
 ;; -----------------------------------------------------------------------------------------------------
 ;; Save and loading
 
 (defn load-state []
     (if (nil? (ru/get :page-current))
         (rf/dispatch-sync [:initialize])
-        (let [subreddits          (reader/read-string (ru/get :subreddits))
-              selected-subreddit  (reader/read-string (ru/get :subreddit-selected-name))
-              page-current        (reader/read-string (ru/get :page-current))
-              favs                (reader/read-string (ru/get :favs))]
-            (rf/dispatch-sync [:replace-db {:page-current page-current :subreddits subreddits :subreddit-selected-name selected-subreddit :favs favs}]))))
+        (let [subreddits          (reader/read-string (ru/get :subreddits "{}"))
+              selected-subreddit  (reader/read-string (ru/get :subreddit-selected-name ""))
+              page-current        (reader/read-string (ru/get :page-current ":Favorites"))
+              favs                (reader/read-string (ru/get :favs "{}"))
+              feeds               (reader/read-string (ru/get :rss-feeds "[]"))
+              feed-selected       (reader/read-string (ru/get :rss-selected ""))]
+
+            (rf/dispatch-sync [:replace-db {:page-current page-current
+                                            :subreddits subreddits
+                                            :subreddit-selected-name selected-subreddit
+                                            :favs favs
+                                            :rss-feeds feeds
+                                            :rss-selected feed-selected
+                                            :rss-data {}  }]))))
 
 
 
