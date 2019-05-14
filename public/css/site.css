@@ -1,0 +1,296 @@
+@font-face{
+    font-family: 'myFont';
+    src: url('fonts/FiraCode-Regular.woff') format('woff');
+}
+@font-face{
+    font-family: 'myFont';
+    src: url('fonts/FiraCode-Medium.woff') format('woff');
+    font-weight: bold;
+}
+
+
+body {
+  font-family: "myFont", "Lucida Console", Monaco, monospace;
+  margin: 0 auto;
+  padding-top: 16px;
+  -webkit-font-smoothing: antialiased;
+  font-size: 1.125em;
+  line-height: 1.5em;
+  --fg1-color: #000;
+  --fg2-color: #333;
+  --bg1-color: rgba(240, 240, 240, 0.15);
+  --bg2-color: rgba(240, 240, 240, 0.25);
+  --bg3-color: rgba(220, 220, 220, 0.95);
+  --border-radius: 6px;
+  --col-white: hsla(0, 0%, 100%, 1.0);
+  --col-white-dark: hsla(0, 0%, 75%, 1.0);
+  --size-icon: 48px;
+  --navbar-width: 128px;
+  margin-left: 128px;
+}
+
+
+
+
+/* ------------------------------------------------------------------- */
+/* GLOBALS */
+
+a:hover {
+	color: black;
+	text-decoration: underline;}
+a {
+	transition: color 0.25s ease-in-out;
+	color: var(--fg2-color);
+	text-decoration: none;}
+
+input, select{
+	font-family: "myFont", "Lucida Console", Monaco, monospace;}
+
+input[type="button"]{
+	cursor: pointer;}
+
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);}
+
+/* ------------------------------------------------------------------- */
+/* BACKGROUND */
+
+.background{
+	position: fixed;
+	top: -128px;
+	left: 0;
+	width: 100%;
+	height: 140%;
+	z-index: -1000;
+}
+
+/* ------------------------------------------------------------------- */
+/* NAV BAR */
+
+.navbar{
+	background: hsla(0, 5%, 5%, 0.975);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: var(--navbar-width);
+	height: 100%;
+	padding-top: 128px;}
+
+/* ------------------------------------------------------------------- */
+/* SETTING ICON */
+
+.button-icon{
+	position:fixed;
+	right:8px;}
+
+.button-icon input{
+	background-color: Transparent;
+	border-radius: 24px;
+	position: relative;
+	cursor: pointer;
+	border: none;
+	width: var(--size-icon);
+	height: var(--size-icon);}
+
+.button-icon:hover img{
+	transform: rotate(180deg);}
+
+.button-icon img{
+	position: absolute;
+	width: var(--size-icon);
+	height: var(--size-icon);
+	transition: transform 0.75s ease-in-out;}
+
+
+
+/* ------------------------------------------------------------------- */
+/* RSS ITEM */
+.rss-item img{
+	width: 100px;
+	height: 100px;
+	border-radius: 5px;
+	box-shadow: 4px 4px 16px -10px black;
+}
+
+
+
+
+/* ------------------------------------------------------------------- */
+/* SIMPLE BUTTON */
+
+.button-simple:hover{
+	color: var(--col-white-dark);}
+
+.button-simple{
+	font-size: 10pt;
+	background-color: Transparent;
+	border: none;
+	color: var(--col-white);
+	transition: color 0.3s ease-in-out;}
+
+
+/* ------------------------------------------------------------------- */
+/* FAVS CATEGORIES */
+
+.favs-category:hover{
+	box-shadow: 8px 8px 26px -10px black;
+	transform: scale(1.05);
+	background: var(--bg2-color);}
+
+.favs-category{
+	box-shadow: 4px 4px 16px -10px black;
+	margin: 10px;
+	width: 150px;
+	background: var(--bg1-color);
+
+	transition-property: transform, background, box-shadow;
+	transition-duration: 0.2s;
+	transition-timing-function: ease-in-out;
+
+	border-width: 1px;
+	border-radius: var(--border-radius);
+	border-style: solid;}
+
+.favs-category-title{
+	text-align: center;
+	font-size: 18pt;
+	padding: 10px 0px;
+	margin: 0px 0px;}
+
+.favs-category-list{
+	list-style-type: none;
+	padding-left: 0;
+	margin: 4px;}
+
+.favs-link {
+	text-align: center;}
+
+.favs-categories{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;}
+
+
+/* ------------------------------------------------------------------- */
+/* SETTINGS */
+
+.subreddits-buttons{
+	margin: 0px 96px;
+	margin-top: -26px;
+	margin-bottom: 30px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;}
+
+.subreddits-buttons input:hover{
+	color: white;
+	background: hsla(0, 0%, 0%, 1.0);
+	transform: scale(1.5);
+	border-radius: 5px;
+}
+.subreddits-buttons input{
+	-webkit-appearance: none; 
+	-moz-appearance: none;
+	appearance: none;       /* remove default arrow */
+	height: 26px;
+	padding: 4px 10px;
+	margin: 1px;
+	box-sizing: border-box;
+	border: none;
+	color: var(--col-white);
+	background: hsla(0, 0%, 0%, 0.7);
+
+	
+	border-radius: 3px;
+	box-shadow: 4px 4px 16px -10px black;
+	transition-property: border-radius, transform, background, color;
+	transition-duration: 0.25s;
+	transition-timing-function: ease-in-out;
+}
+
+
+/* ------------------------------------------------------------------- */
+/* SETTINGS */
+
+.settings{
+	transition: transform 0.25s ease-in-out;
+	width: 480px;
+	height: 240px;
+	opacity: 1;
+
+	background: var(--fg1-color);
+	white-space: nowrap;
+	overflow: hidden;
+	border: 1px solid black;
+	border-radius: var(--border-radius);
+	position: fixed;
+	left: calc(50% - 240px);
+	top: calc(50% - 120px);
+	padding: 10px;
+	box-shadow: 4px 4px 16px -10px black;
+	margin-left: calc(var(--navbar-width) / 2);}
+
+.settings h4{
+	color: var(--col-white);
+	font-weight: bold;
+	font-size: 16pt;
+	margin-left: 5px;
+	margin-top: 3px;}
+
+.settings input{
+	margin-bottom: 20px;}
+
+
+.settings input, select{
+	-webkit-appearance: none; 
+	-moz-appearance: none;
+	appearance: none;       /* remove default arrow */
+	height: 22px;
+	padding: 4px 10px;
+	margin-left: 3px;
+	margin-right: 3px;
+	margin-bottom: 24px;
+
+	box-sizing: border-box;
+	border: none;
+	border-radius: calc(var(--border-radius) / 2);
+	color: var(--col-white);
+}
+
+.settings input[type="button"]{
+	background-color: var(--fg2-color);
+}
+
+.settings select{
+	background: var(--fg2-color);
+}
+
+.settings input[type="text"]{
+	background: var(--fg2-color);
+	width: 140px;
+}
+
+
+
+/*
+.button-simple:hover{
+	color: var(--col-white-dark);}
+
+.button-simple{
+	font-size: 10pt;
+	background-color: Transparent;
+	border: none;
+	color: var(--col-white);
+	transition: color 0.3s ease-in-out;}
+*/
+
+
+
+
+
+
+

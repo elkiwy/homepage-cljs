@@ -15,5 +15,3 @@ pom.xml.asc
 *.log
 /.env
 
-/public
-/env
