@@ -109,20 +109,45 @@ input[type="button"]{
 
 /* ------------------------------------------------------------------- */
 /* RSS ITEM */
+.rss-item:hover{
+	background: var(--bg2-color);
+	box-shadow: 8px 8px 26px -10px black;
+	transform: scale(1.01);
+}
 .rss-item{
-	margin-top: 64px;
+	margin-top: 16px;
 	margin-left: 32px;
+	margin-right: 64px;
 	clear:both;
+	padding: 12px;
+
+	background: var(--bg1-color);
+	border-radius: var(--border-radius);
+	border: solid var(--fg2-color) 1px;
+	box-shadow: 4px 4px 16px -10px black;
+
+	min-height: 72px;
+
+	transition-duration: 0.25s;
+	transition-property: background, box-shadow, transform;
+	transition-timing-function: ease-in-out;
 }
 
 .rss-item h2{
-	margin-bottom: 0px;
+	margin: 0px 0px 16px 0px;
 }
 
+.rss-item p{
+	overflow:auto;
+	margin:0px;
+}
 
 .rss-item img{
-	width: 100px;
-	height: 100px;
+	float:left;
+	overflow: auto;
+	margin-right: 12px;
+	width: 72px;
+	height: 72px;
 	border-radius: 5px;
 	box-shadow: 4px 4px 16px -10px black;
 }

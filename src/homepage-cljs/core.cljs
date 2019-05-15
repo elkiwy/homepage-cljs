@@ -58,21 +58,11 @@
                     [:div {:class "background" :style {:background-image bg-img}}
                         [navbar currentPage]])
                 [:div {:style {:margin-top "32px" }}
-
-                    [:p "debug"]
-                    [:p (str (:rss-feeds @db))]
-                    [:p (str (:rss-selected @db))]
-                    [:p "end debug"]
-                    ;[:p (str (:subreddit-selected-name @db))]
-
-                    ;[(@currentPage pages)]
-
-                    [rss/rss-main]
-
-
-                    ;[:p (str @testAtom)]
-                    
-
+                    ;[:p "debug"]
+                    ;[:p (str (:rss-feeds @db))]
+                    ;[:p (str (:rss-selected @db))]
+                    ;[:p "end debug"]
+                    [(@currentPage pages)]
                     ]])))
 
 

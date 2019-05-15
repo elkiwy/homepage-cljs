@@ -28,6 +28,8 @@
         (ru/set! :subreddits              (pr-str (discard-json (:subreddits data))))
         (ru/set! :subreddit-selected-name (pr-str (:subreddit-selected-name data)))
         (ru/set! :favs                    (pr-str (:favs data)))
+        (ru/set! :rss-feeds               (pr-str (:rss-feeds data)))
+        (ru/set! :rss-selected            (pr-str (:rss-selected data)))
         (ru/set! :page-current            (pr-str (:page-current data)))))
 
 
@@ -160,12 +162,14 @@
         (update-db-and-save #(assoc db :rss-selected newRss))))
 
 (rf/reg-event-db :rss-added
-    (fn [db [_ rss]]
-        (update-db-and-save #(update-in db [:rss-feeds] conj rss))))
+    (fn [db [_ name url]]
+        (update-db-and-save #(update-in db [:rss-feeds] conj [name url]))))
 
 (rf/reg-event-db :rss-removed
-    (fn [db [_ rss]]
-        (update-db-and-save #(update-in db [:rss-feeds] remove-vec rss))))
+    (fn [db [_ name]]
+        (let [feeds (:rss-feeds db)
+              item  (first (filter #(= (first %) name) feeds))]
+            (update-db-and-save #(update-in db [:rss-feeds] remove-vec item)))))
 
 (rf/reg-event-db :rss-fetched-data
     (fn [db [_ rss newdata]]
