@@ -1,19 +1,14 @@
 (ns homepage-cljs.core
     (:require-macros [cljs.core.async.macros :refer [go]])
-
     (:require   [reagent.core :as r]
-
                 [clojure.pprint :as pp]
-
-
                 [re-frame.core :as rf]
                 [re-frame.db :as rfdb]
                 [homepage-cljs.app-state]
+                [homepage-cljs.account :as account]
                 [homepage-cljs.reddit :as reddit]
                 [homepage-cljs.favorites :as favs]
                 [homepage-cljs.rss :as rss]
-
-
                 [cljs-http.client :as http]
                 [cljs.core.async :refer [<!]]))
 
@@ -25,7 +20,7 @@
 ;; 
 
 ;Define a map to get the right component for the right current page keyword
-(def pages {:Favorites favs/favs-main :Reddit reddit/subreddit-main :Rss rss/rss-main})
+(def pages {:Favorites favs/favs-main :Reddit reddit/subreddit-main :Rss rss/rss-main :Account account/account-main})
 
 (defn navbar [cp]
     [:div {:class "navbar"}
@@ -62,7 +57,9 @@
                     ;[:p (str (:rss-feeds @db))]
                     ;[:p (str (:rss-selected @db))]
                     ;[:p "end debug"]
+
                     [(@currentPage pages)]
+                    ;[account/account-main]
                     ]])))
 
 

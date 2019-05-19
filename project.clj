@@ -6,6 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.520"]
+                 [org.clojure/data.codec "0.1.1"]
                  [funcool/tubax "0.2.0"]
                  [hickory "0.7.1"]
                  [reagent "0.8.1"]

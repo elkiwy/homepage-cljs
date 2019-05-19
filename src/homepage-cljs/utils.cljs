@@ -3,6 +3,14 @@
     (:require [reagent.core :as r]))
 
 
+;Takes the subreddits map and outputs the map without the jsons
+(defn discard-json [subreddits]
+    (loop [subs (seq subreddits)
+           result []]
+        (if (empty? subs)
+            (into {} result)
+            (recur (rest subs)
+                (concat result [[(first (first subs)) {:json ""}]])))))
 
 (defn interpolate-ease-in-out
     [duration totalT]
