@@ -44,7 +44,6 @@
           db (rf/subscribe [:app-db])
           anim (r/atom (rand-int 360))
           testAtom (r/atom nil)]
-
         (fn []
             [:div 
                 (let [col1 (str "hsl(" @anim ", 50%, 70%)")
@@ -68,7 +67,7 @@
 ;; Initialize app
 (defn mount-root []
     (homepage-cljs.app-state/load-state)
-    (println "LOADED DB: " @rfdb/app-db)
+    (account/try-download-state)
     (r/render [main-page] (.getElementById js/document "app")))
 
 (defn init! []

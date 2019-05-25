@@ -118,7 +118,10 @@
 })) 
 
 (rf/reg-event-db :replace-db
-    (fn [_ [_ newdb]] newdb))
+    (fn [db [_ newdb]]
+        (let [cp (:page-current db)
+              cp (if (nil? cp) :Reddit cp)]
+            (update-db-and-save false #(assoc newdb :page-current cp)))))
 
 
 ;Navigation
@@ -148,6 +151,10 @@
     (fn [db [_ category]]
         (update-db-and-save true #(assoc-in db [:favs category] {}))))
 
+(rf/reg-event-db :favorite-category-removed
+    (fn [db [_ category]]
+        (update-db-and-save true #(utils/dissoc-in db [:favs] category))))
+
 (rf/reg-event-db :favorite-link-added
     (fn [db [_ category name link]]
         (update-db-and-save true #(assoc-in db [:favs category name] link))))
@@ -155,6 +162,7 @@
 (rf/reg-event-db :favorite-link-removed
     (fn [db [_ category name]]
         (update-db-and-save true #(utils/dissoc-in db [:favs category] name))))
+
 
 
 (defn remove-vec [vec item]

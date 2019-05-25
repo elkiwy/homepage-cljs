@@ -1,9 +1,12 @@
 (ns homepage-cljs.reddit
-    (:require-macros [cljs.core.async.macros :refer [go]])
+    (:require-macros [cljss.core]
+                     [cljs.core.async.macros :refer [go]])
     (:require   [reagent.core :as r]
                 [re-frame.core :as rf]
                 [homepage-cljs.app-state :as state]
                 [homepage-cljs.utils :as utils]
+                [homepage-cljs.style :as style]
+                [cljss.core :as ss]              
                 [cljs-http.client :as http]
                 [cljs.core.async :refer [<!]]))
 
@@ -37,7 +40,7 @@
                     (for [sub @subs] 
                         (let [subName (first sub)] ^{:key subName}
                             [:input {:type "button" :value subName
-                                        :on-click #(select-subreddit subName)}]))
+                                     :on-click #(select-subreddit subName)}]))
                     ]
                 (let [s (if (empty? @sub) "" (str " - " (clojure.string/capitalize @sub)))]
                     [:h1 {:style {:margin-top -10 :text-align "center"}} (str "Reddit" s)])])))
@@ -46,6 +49,8 @@
 (defn subreddit-post-link [post-data]
     (fn []
         [:a {:href (:url post-data)} (:title post-data)]))
+
+
 
 
 
@@ -61,15 +66,18 @@
                         [:p (str "Fetching \"" @selected "\" subreddit...")])
                 :else 
                     (let [posts (:children (:data @json))]
-                        [:ul (for [post posts] ^{:key (:id (:data post))}
-                            [:li [subreddit-post-link (:data post)]])])))))
+                        [:div
+                            (for [post posts] ^{:key (:id (:data post))}
+                                     [:div {:class (style/background)
+                                            :style {:padding 10 :margin "16px 48px"}}
+                                        [subreddit-post-link (:data post)]])])))))
+
               
 
 (defn subreddit-settings [size]
     (let [subs (rf/subscribe [:subreddits])
           newSubNameAtom (r/atom "")
-          remSubNameAtom (r/atom "")
-          ]
+          remSubNameAtom (r/atom "")]
         (fn []
             [:div {:class "settings" :style {:transform (str "scale(" @size ")")  }}
                 ;Close button

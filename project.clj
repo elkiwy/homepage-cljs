@@ -11,6 +11,7 @@
                  [hickory "0.7.1"]
                  [reagent "0.8.1"]
                  [reagent-utils "0.3.2"]
+                 [clj-commons/cljss "1.6.4"]
                  [re-frame "0.10.6"]
                  [cljs-http "0.1.46"]]
 

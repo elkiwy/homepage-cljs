@@ -60,19 +60,19 @@
                   config (reader/read-string config-string)]
                 (if (= (:code responseBody) 200)
                     (do
-                        (reset! logAtom (str "Config downloaded successfully"))
+                        (when (not (nil? logAtom)) (reset! logAtom (str "Config downloaded successfully")))
                         (rf/dispatch-sync [:replace-db config])
                         (rf/dispatch-sync [:account-updated usr psw false]))
-                    (reset! logAtom (str "Config downloaded failed with code " code)))))))
+                    (when (not (nil? logAtom)) (reset! logAtom (str "Config downloaded failed with code " code))))))))
 
 
-(defn addConfig [usr psw logAtom]
-    (let [fullConfig @rfdb/app-db
+(defn addConfig [usr psw logAtom targetDb]
+    (let [fullConfig (if (nil? targetDb) @rfdb/app-db targetDb)
           slimConfig (update fullConfig :subreddits utils/discard-json)
           base64     (b64/encodeString (str slimConfig))]
         (backend-post-request addUserConfig-endpoint {:user usr} {:password psw :config base64}
             (fn [responseBody]
-                (println "Updated config")
+                (println "Updated config " (count base64))
                 (when (not (nil? logAtom))
                     (if (= (:code responseBody) 200)
                         (reset! logAtom (str "Config uploaded successfully with code " (:code responseBody)))
@@ -82,9 +82,13 @@
 (defn updateConfig [updated-db]
     (let [{:keys [name pass sync]} (:account updated-db)]
         (when (not (empty? name))
-            (addConfig name pass nil))))
+            (addConfig name pass nil updated-db))))
 
 
+(defn try-download-state []
+    (let [account (:account @rfdb/app-db)]
+        (when (not (empty? (:name account)))
+            (getConfig (:name account) (:pass account) nil))))
 
 
 (defn account-with-account [account logAtom]
@@ -93,7 +97,7 @@
             [:h2 {:style {:margin-bottom 0}} "Manage account"]
             [:p {:style {:margin 0}} (str "Logged in as " (:name @account))]
             [:input {:type "button" :value (str "Manually upload to " (:name @account) "'s cloud")
-                        :on-click #(addConfig (:name @account) (:pass @account) logAtom)}]
+                        :on-click #(addConfig (:name @account) (:pass @account) logAtom nil)}]
             [:input {:type "button" :value "Log out"
                         :on-click #(do (rf/dispatch-sync [:replace-db {}]) (rf/dispatch-sync [:initialize]) (rf/dispatch-sync [:page-changed :Account]))}]]))
 
@@ -113,7 +117,7 @@
                 [:input {:type "password" :value @passwordAtom :placeholder "Password" :style {:display "block"}
                             :on-change #(reset! passwordAtom (-> % .-target .-value))}]
                 [:input {:type "button" :value "Create an account" 
-                            :on-click #(addConfig @usernameAtom @passwordAtom logAtom)}]
+                            :on-click #(addConfig @usernameAtom @passwordAtom logAtom nil)}]
                 ;Login
                 [:input {:type "button" :value "Log in"
                             :on-click #(getConfig @usernameAtom @passwordAtom logAtom)}]

@@ -1,12 +1,16 @@
 (ns homepage-cljs.favorites
+    (:require-macros [cljss.core])
     (:require [reagent.core :as r]
               [re-frame.core :as rf]
+              [cljss.core :as ss]                
+              [homepage-cljs.style :as style]
               [homepage-cljs.utils :as utils]
               [homepage-cljs.app-state]))
 
 
 
 ; (homepage-cljs.app-state/app-db)
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -21,12 +25,12 @@
           removeCateAtom (r/atom "")
           removeFavAtom  (r/atom "")
           nameCatAtom (r/atom "")
+          removeCategoryAtom (r/atom "")
           ]
         (fn []
             ;Fix cateAtom not getting updated on fresh app start since favs was still empty
             (when (empty? (clojure.string/trim @cateAtom))
                 (reset! cateAtom (if (empty? @favs) "" (key (first @favs)))))
-
 
             [:div {:class "settings" :style {:transform (str "scale(" @size ")")  }}
                 ;Close button
@@ -40,7 +44,6 @@
                         :on-click #(rf/dispatch [:favorite-category-added @nameCatAtom])}]
 
                 ;Favorite
-
                 [:h4 {:style {:margin-bottom 0 }} "Add a favorite"]
 
                 [:input {:type "text" :value @nameAtom :placeholder "Name"
@@ -68,6 +71,17 @@
 
                 [:input {:type "button" :value "Remove from Favorite"
                                         :on-click #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])}]
+
+                ;Remove category
+                [:h4 {:style {:margin-bottom 0 }} "Remove a Category"]
+
+                [:select {:on-change #(reset! removeCategoryAtom (-> % .-target .-value))} :defaultValue ""
+                    [:option  ""]
+                    (for [category (seq @favs)]
+                        ^{:key (first category)} [:option (first category)])]
+
+                [:input {:type "button" :value "Remove from categories"
+                                        :on-click #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])}]
                 ])))
 
 
@@ -78,11 +92,12 @@
 ;Single favorite link component
 (defn favs-comp-fav [name link]
     (fn []
-        [:li {:class "favs-link" } [:a {:href link} name]]))
+        [:li {:style {:text-align "center"}} [:a {:href link} name]]))
 
 ;Single category component
 (defn favs-comp-category [catName hrefs]
-    [:div {:class "favs-category"}
+    [:div {:class (homepage-cljs.style/background)
+           :style {:margin "10px" :width "150px"}}
         [:h3 {:class "favs-category-title" } catName]
         [:ul {:class "favs-category-list"}
             (for [[favName, favLink] hrefs]
@@ -100,9 +115,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Main component
-
-
-
 
 ;Main favorites component
 (defn favs-main []
