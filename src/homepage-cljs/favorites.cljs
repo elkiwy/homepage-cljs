@@ -92,12 +92,12 @@
 ;Single favorite link component
 (defn favs-comp-fav [name link]
     (fn []
-        [:li {:style {:text-align "center"}} [:a {:href link} name]]))
+        [:li {:style {:text-align "center" :font-size "12pt"}} [:a {:href link} name]]))
 
 ;Single category component
 (defn favs-comp-category [catName hrefs]
     [:div {:class (homepage-cljs.style/background)
-           :style {:margin "10px" :width "150px"}}
+           :style {:margin "10px" :width "250px"}}
         [:h3 {:class "favs-category-title" } catName]
         [:ul {:class "favs-category-list"}
             (for [[favName, favLink] hrefs]

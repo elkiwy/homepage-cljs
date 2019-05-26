@@ -58,7 +58,7 @@
                     ;[:p "end debug"]
 
                     [(@currentPage pages)]
-                    ;[account/account-main]
+                    ;[acicount/account-main]
                     ]])))
 
 
@@ -67,6 +67,7 @@
 ;; Initialize app
 (defn mount-root []
     (homepage-cljs.app-state/load-state)
+    (println "COSAAAAA" @rfdb/app-db)
     (account/try-download-state)
     (r/render [main-page] (.getElementById js/document "app")))
 

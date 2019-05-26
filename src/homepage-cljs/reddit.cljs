@@ -48,7 +48,9 @@
 
 (defn subreddit-post-link [post-data]
     (fn []
-        [:a {:href (:url post-data)} (:title post-data)]))
+        [:a {:href (:url post-data) :target "_blank"} 
+            [:div {:class (style/background) :style {:padding 10 :margin "16px 48px"}}
+                 (:title post-data)]]))
 
 
 
@@ -60,17 +62,15 @@
         (fn []
             (cond
                 (empty? @selected)
-                    [:p "No subreddit selected."]
+                    [:p {:style {:margin "auto" :text-align "center"}} "No subreddit selected."]
                 (empty? @json)
                     (do (fetch-subreddit @selected)
-                        [:p (str "Fetching \"" @selected "\" subreddit...")])
+                        [:p {:style {:margin "auto" :text-align "center"}} (str "Fetching \"" @selected "\" subreddit...")])
                 :else 
                     (let [posts (:children (:data @json))]
                         [:div
                             (for [post posts] ^{:key (:id (:data post))}
-                                     [:div {:class (style/background)
-                                            :style {:padding 10 :margin "16px 48px"}}
-                                        [subreddit-post-link (:data post)]])])))))
+                                        [subreddit-post-link (:data post)])])))))
 
               
 

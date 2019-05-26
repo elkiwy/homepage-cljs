@@ -15,14 +15,15 @@
 (defn save-state
     ([]
         (save-state @rfdb/app-db))
-    ([data] 
-        (ru/set! :subreddits              (pr-str (utils/discard-json (:subreddits data))))
-        (ru/set! :subreddit-selected-name (pr-str (:subreddit-selected-name data)))
-        (ru/set! :favs                    (pr-str (:favs data)))
-        (ru/set! :account                 (pr-str (:account data)))
-        (ru/set! :rss-feeds               (pr-str (:rss-feeds data)))
-        (ru/set! :rss-selected            (pr-str (:rss-selected data)))
-        (ru/set! :page-current            (pr-str (:page-current data)))))
+    ([data]
+        (when (not (nil? (:page-current data)))
+            (ru/set! :subreddits              (pr-str (utils/discard-json (:subreddits data))))
+            (ru/set! :subreddit-selected-name (pr-str (:subreddit-selected-name data)))
+            (ru/set! :favs                    (pr-str (:favs data)))
+            (ru/set! :account                 (pr-str (:account data)))
+            (ru/set! :rss-feeds               (pr-str (:rss-feeds data)))
+            (ru/set! :rss-selected            (pr-str (:rss-selected data)))
+            (ru/set! :page-current            (pr-str (:page-current data))))))
 
 
 
@@ -105,23 +106,20 @@
 
 (rf/reg-event-db :initialize 
     (fn [_ _] {:page-current :Favorites
-
               :account {:name "" :pass "" :sync false}
-
               :subreddits {} :subreddit-selected-name ""
-
               :favs {}
-
               :rss-feeds [] ;Vector of Name-Link pairs
               :rss-selected "" ;String
               :rss-data {} ;String - Data map
 })) 
 
 (rf/reg-event-db :replace-db
-    (fn [db [_ newdb]]
-        (let [cp (:page-current db)
-              cp (if (nil? cp) :Reddit cp)]
-            (update-db-and-save false #(assoc newdb :page-current cp)))))
+    (fn [db [_ new-db full-replace?]]
+        (let [cp (:page-current db)]
+            (if full-replace?
+                (update-db-and-save false #(assoc new-db :page-current (:page-current new-db)))
+                (update-db-and-save false #(assoc new-db :page-current cp))))))
 
 
 ;Navigation
@@ -199,8 +197,12 @@
 ;; Save and loading
 
 (defn load-state []
-    (if (nil? (ru/get :page-current))
-        (rf/dispatch-sync [:initialize])
+    (println "COSE" (ru/get :page-current))
+    (if (nil? (reader/read-string (ru/get :page-current)))
+
+        (do (println "Initialized")
+            (rf/dispatch-sync [:initialize]))
+
         (let [subreddits          (reader/read-string (ru/get :subreddits "{}"))
               selected-subreddit  (reader/read-string (ru/get :subreddit-selected-name ""))
               page-current        (reader/read-string (ru/get :page-current ":Favorites"))
@@ -208,7 +210,6 @@
               account             (reader/read-string (ru/get :account "{:name \"\" :pass \"\" :sync false}"))
               feeds               (reader/read-string (ru/get :rss-feeds "[]"))
               feed-selected       (reader/read-string (ru/get :rss-selected ""))]
-
             (rf/dispatch-sync [:replace-db {:page-current page-current
                                             :subreddits subreddits
                                             :subreddit-selected-name selected-subreddit
@@ -216,7 +217,8 @@
                                             :account account
                                             :rss-feeds feeds
                                             :rss-selected feed-selected
-                                            :rss-data {}  }]))))
+                                            :rss-data {}}
+                                            true]))))
 
 
 

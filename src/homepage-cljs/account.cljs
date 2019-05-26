@@ -106,8 +106,7 @@
 
 (defn account-without-account [account logAtom]
     (let [usernameAtom (r/atom "")
-          passwordAtom (r/atom "")
-          ]
+          passwordAtom (r/atom "")]
         (fn []
             [:div
                 ;Register
