@@ -11,7 +11,14 @@
 
 ; (homepage-cljs.app-state/app-db)
 
+(defn custom-select-input [items dataAtom]
+    (fn [] 
+        [:select {:on-change #(reset! dataAtom (-> % .-target .-value))} :defaultValue @dataAtom
+            (for [item items] ^{:key item} [:option item])]))
 
+(defn custom-text-input [placeholder dataAtom]
+    (fn [] [:input {:type "text" :value @dataAtom :placeholder placeholder
+                :on-change #(reset! dataAtom (-> % .-target .-value))}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Add a favorite input section 
@@ -25,8 +32,7 @@
           removeCateAtom (r/atom "")
           removeFavAtom  (r/atom "")
           nameCatAtom (r/atom "")
-          removeCategoryAtom (r/atom "")
-          ]
+          removeCategoryAtom (r/atom "")]
         (fn []
             ;Fix cateAtom not getting updated on fresh app start since favs was still empty
             (when (empty? (clojure.string/trim @cateAtom))
@@ -38,32 +44,21 @@
 
                 ;Category
                 [:h4 {:style {:margin-bottom 0}} "Add a category"]
-                [:input {:type "text" :value @nameCatAtom :placeholder "Name"
-                        :on-change #(reset! nameCatAtom (-> % .-target .-value))}]
+                [custom-text-input "Name" nameCatAtom]
                 [:input {:type "button" :value "Add to Favorite"
                         :on-click #(rf/dispatch [:favorite-category-added @nameCatAtom])}]
 
                 ;Favorite
                 [:h4 {:style {:margin-bottom 0 }} "Add a favorite"]
-
-                [:input {:type "text" :value @nameAtom :placeholder "Name"
-                        :on-change #(reset! nameAtom (-> % .-target .-value))}]
-                [:input {:type "text" :value @linkAtom :placeholder "URL"
-                        :on-change #(reset! linkAtom (-> % .-target .-value))}]
-                [:select {:on-change #(reset! cateAtom (-> % .-target .-value))} :defaultValue @cateAtom
-                    (for [category (seq @favs)]
-                        ^{:key (first category)} [:option (utils/deurlizeString (name (first category)))])]
+                [custom-text-input "Name" nameAtom]
+                [custom-text-input "URL" linkAtom]
+                [custom-select-input (map #(utils/deurlizeString (name (first %))) (seq @favs)) cateAtom]
                 [:input {:type "button" :value "Add to Favorite"
                                         :on-click #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])}]
 
                 ;Remove fav
                 [:h4 {:style {:margin-bottom 0 }} "Remove a favorite"]
-
-                [:select {:on-change #(reset! removeCateAtom (-> % .-target .-value))} :defaultValue ""
-                    [:option  ""]
-                    (for [category (seq @favs)]
-                        ^{:key (first category)} [:option (utils/deurlizeString (name (first category)))])]
-
+                [custom-select-input (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs))) removeCateAtom]
                 [:select {:on-change #(reset! removeFavAtom (-> % .-target .-value))} :defaultValue ""
                     [:option ""]
                     (for [fav (seq (get @favs (keyword (utils/urlizeString @removeCateAtom))))]
@@ -74,12 +69,7 @@
 
                 ;Remove category
                 [:h4 {:style {:margin-bottom 0 }} "Remove a Category"]
-
-                [:select {:on-change #(reset! removeCategoryAtom (-> % .-target .-value))} :defaultValue ""
-                    [:option  ""]
-                    (for [category (seq @favs)]
-                        ^{:key (first category)} [:option (utils/deurlizeString (name (first category)))])]
-
+                [custom-select-input (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs))) removeCategoryAtom]
                 [:input {:type "button" :value "Remove from categories"
                                         :on-click #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])}]
                 ])))
