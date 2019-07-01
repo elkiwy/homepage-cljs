@@ -11,6 +11,7 @@
                 [cljs.core.async :refer [<!]]))
 
 
+(def dataAtom (r/atom {"clojure" {}}))
 
 
 ;; -------------------------
@@ -21,26 +22,27 @@
     (go (let [url       (str "https://www.reddit.com/r/" subRedditName ".json")
               response  (<! (http/get url {:with-credentials? false }))]
             (println "fetched " (count (str (:body response))) " bytes from " subRedditName)
-            (rf/dispatch [:subreddit-fetched-data subRedditName (:body response)]))))
+            (reset! dataAtom {subRedditName (:body response)})
+            ;(rf/dispatch [:subreddit-fetched-data subRedditName (:body response)])
+            )))
 
 
 (defn select-subreddit [sub-name]
-    (rf/dispatch [:subreddit-selected-changed sub-name])
+    (rf/dispatch [:reddit-selected-changed sub-name])
     (fetch-subreddit sub-name))
 
 
 ;; -------------------------
 ;; Components
 (defn subreddit-header []
-    (let [sub  (rf/subscribe [:subreddit-selected-name])
-          subs (rf/subscribe [:subreddits])]
+    (let [sub  (rf/subscribe [:reddit-selected])
+          subs (rf/subscribe [:reddit-subreddits])]
         (fn []
             [:div
                 [:div {:class "subreddits-buttons"}
-                    (for [sub @subs] 
-                        (let [subName (first sub)] ^{:key subName}
-                            [:input {:type "button" :value subName
-                                     :on-click #(select-subreddit subName)}]))
+                    (for [subName @subs] ^{:key subName}
+                        [:input {:type "button" :value subName
+                                 :on-click #(select-subreddit subName)}])
                     ]
                 (let [s (if (empty? @sub) "" (str " - " (clojure.string/capitalize @sub)))]
                     [:h1 {:style {:margin-top -10 :text-align "center"}} (str "Reddit" s)])])))
@@ -56,18 +58,19 @@
 
 
 
+
 (defn subreddit-posts []
-    (let [json (rf/subscribe [:subreddit-selected-data])
-          selected (rf/subscribe [:subreddit-selected-name])]
+    (let [selected (rf/subscribe [:reddit-selected])]
         (fn []
             (cond
                 (empty? @selected)
                     [:p {:style {:margin "auto" :text-align "center"}} "No subreddit selected."]
-                (empty? @json)
+
+                (empty? (get-in @dataAtom [@selected]))
                     (do (fetch-subreddit @selected)
                         [:p {:style {:margin "auto" :text-align "center"}} (str "Fetching \"" @selected "\" subreddit...")])
                 :else 
-                    (let [posts (:children (:data @json))]
+                    (let [posts (:children (:data (get-in @dataAtom [@selected])))]
                         [:div
                             (for [post posts] ^{:key (:id (:data post))}
                                         [subreddit-post-link (:data post)])])))))
@@ -75,7 +78,7 @@
               
 
 (defn subreddit-settings [size]
-    (let [subs (rf/subscribe [:subreddits])
+    (let [subs (rf/subscribe [:reddit-subreddits])
           newSubNameAtom (r/atom "")
           remSubNameAtom (r/atom "")]
         (fn []

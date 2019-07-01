@@ -72,11 +72,11 @@
 
 
 
+(defn remove-from-vector [coll item]
+    (into [] (remove #(= % item) coll)))
 
 
 
-;; ----------------------------------------------
-;; XML parsing
 
 (defn urlizeString [s]
     (clojure.string/replace s " " "%20"))

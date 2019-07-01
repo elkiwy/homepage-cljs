@@ -21,7 +21,7 @@
     (let [favs (rf/subscribe [:favs])
           nameAtom (r/atom "")
           linkAtom (r/atom "")
-          cateAtom (r/atom (if (empty? @favs) "" (key (first @favs))))
+          cateAtom (r/atom (if (empty? @favs) "" (str (key (first @favs)))))
           removeCateAtom (r/atom "")
           removeFavAtom  (r/atom "")
           nameCatAtom (r/atom "")
@@ -52,7 +52,7 @@
                         :on-change #(reset! linkAtom (-> % .-target .-value))}]
                 [:select {:on-change #(reset! cateAtom (-> % .-target .-value))} :defaultValue @cateAtom
                     (for [category (seq @favs)]
-                        ^{:key (first category)} [:option (first category)])]
+                        ^{:key (first category)} [:option (utils/deurlizeString (name (first category)))])]
                 [:input {:type "button" :value "Add to Favorite"
                                         :on-click #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])}]
 
@@ -62,12 +62,12 @@
                 [:select {:on-change #(reset! removeCateAtom (-> % .-target .-value))} :defaultValue ""
                     [:option  ""]
                     (for [category (seq @favs)]
-                        ^{:key (first category)} [:option (first category)])]
+                        ^{:key (first category)} [:option (utils/deurlizeString (name (first category)))])]
 
                 [:select {:on-change #(reset! removeFavAtom (-> % .-target .-value))} :defaultValue ""
                     [:option ""]
-                    (for [fav (seq (get-in @favs [@removeCateAtom]))]
-                        ^{:key (first fav)} [:option (first fav)])]
+                    (for [fav (seq (get @favs (keyword (utils/urlizeString @removeCateAtom))))]
+                        ^{:key (first fav)} [:option (utils/deurlizeString (name (first fav)))])]
 
                 [:input {:type "button" :value "Remove from Favorite"
                                         :on-click #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])}]
@@ -78,7 +78,7 @@
                 [:select {:on-change #(reset! removeCategoryAtom (-> % .-target .-value))} :defaultValue ""
                     [:option  ""]
                     (for [category (seq @favs)]
-                        ^{:key (first category)} [:option (first category)])]
+                        ^{:key (first category)} [:option (utils/deurlizeString (name (first category)))])]
 
                 [:input {:type "button" :value "Remove from categories"
                                         :on-click #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])}]
@@ -98,10 +98,10 @@
 (defn favs-comp-category [catName hrefs]
     [:div {:class (homepage-cljs.style/background)
            :style {:margin "10px" :width "250px"}}
-        [:h3 {:class "favs-category-title" } catName]
+        [:h3 {:class "favs-category-title" } (utils/deurlizeString (name catName))]
         [:ul {:class "favs-category-list"}
             (for [[favName, favLink] hrefs]
-                ^{:key favName} [favs-comp-fav favName favLink])]])
+                ^{:key favName} [favs-comp-fav (utils/deurlizeString (name favName)) favLink])]])
             
 ;Multiple categories generator
 (defn favs-comp-categories []
@@ -118,7 +118,6 @@
 
 ;Main favorites component
 (defn favs-main []
-    (println "favs-main reloaded")
     (let [sizeSetting (r/atom 0)]
         (fn []
             [:div 

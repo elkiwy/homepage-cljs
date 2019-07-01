@@ -17,8 +17,7 @@
         (save-state @rfdb/app-db))
     ([data]
         (when (not (nil? (:page-current data)))
-            (ru/set! :subreddits              (pr-str (utils/discard-json (:subreddits data))))
-            (ru/set! :subreddit-selected-name (pr-str (:subreddit-selected-name data)))
+            (ru/set! :reddit                  (pr-str (:reddit data)))
             (ru/set! :favs                    (pr-str (:favs data)))
             (ru/set! :account                 (pr-str (:account data)))
             (ru/set! :rss-feeds               (pr-str (:rss-feeds data)))
@@ -51,17 +50,11 @@
 
 
 ;reddit
-(rf/reg-sub :subreddits
-    (fn [db _] (:subreddits db)))
+(rf/reg-sub :reddit-subreddits ;A vector of strings
+    (fn [db _] (:subreddits (:reddit db))))
 
-(rf/reg-sub :subreddit-selected-name
-    (fn [db _] (:subreddit-selected-name db)))
-
-(rf/reg-sub :subreddit-selected-data
-    :<- [:subreddit-selected-name]
-    :<- [:subreddits]
-    (fn [[name subreddits] _]
-        (get-in subreddits [name :json])))
+(rf/reg-sub :reddit-selected ;A string
+    (fn [db _] (:selected (:reddit db))))
 
 
 ;rss
@@ -107,7 +100,7 @@
 (rf/reg-event-db :initialize 
     (fn [_ _] {:page-current :Favorites
               :account {:name "" :pass "" :sync false}
-              :subreddits {} :subreddit-selected-name ""
+              :reddit {:selected "" :subreddits []}
               :favs {}
               :rss-feeds [] ;Vector of Name-Link pairs
               :rss-selected "" ;String
@@ -128,38 +121,35 @@
 
 
 ;Reddit
-(rf/reg-event-db :subreddit-selected-changed
+(rf/reg-event-db :reddit-selected-changed
     (fn [db [_ newSubreddit]]
-        (update-db-and-save false #(assoc db :subreddit-selected-name newSubreddit))))
+        (update-db-and-save false #(assoc-in db [:reddit :selected] newSubreddit))))
 
-(rf/reg-event-db :subreddit-added
+(rf/reg-event-db :reddit-added-subreddit
     (fn [db [_ sub]]
-        (update-db-and-save true #(assoc-in db [:subreddits sub] {:json ""}))))
+        (update-db-and-save true #(update-in db [:reddit :subreddits] conj sub))))
 
-(rf/reg-event-db :subreddit-removed
+(rf/reg-event-db :reddit-removed-subreddit
     (fn [db [_ sub]]
-        (update-db-and-save true #(utils/dissoc-in db [:subreddits] sub))))
+        (update-db-and-save true #(update-in db [:reddit :subreddits] utils/remove-from-vector sub))))
 
-(rf/reg-event-db :subreddit-fetched-data
-    (fn [db [_ sub newdata]]
-        (update-db-and-save false #(assoc-in db [:subreddits sub :json] newdata))))
 
 ;Favorites
 (rf/reg-event-db :favorite-category-added
     (fn [db [_ category]]
-        (update-db-and-save true #(assoc-in db [:favs category] {}))))
+        (update-db-and-save true #(assoc-in db [:favs (utils/urlizeString category)] {}))))
 
 (rf/reg-event-db :favorite-category-removed
     (fn [db [_ category]]
-        (update-db-and-save true #(utils/dissoc-in db [:favs] category))))
+        (update-db-and-save true #(utils/dissoc-in db [:favs] (utils/urlizeString category)))))
 
 (rf/reg-event-db :favorite-link-added
     (fn [db [_ category name link]]
-        (update-db-and-save true #(assoc-in db [:favs category name] link))))
+        (update-db-and-save true #(assoc-in db [:favs (utils/urlizeString category) (utils/urlizeString name)] link))))
     
 (rf/reg-event-db :favorite-link-removed
     (fn [db [_ category name]]
-        (update-db-and-save true #(utils/dissoc-in db [:favs category] name))))
+        (update-db-and-save true #(utils/dissoc-in db [:favs (utils/urlizeString category)] (utils/urlizeString name)))))
 
 
 
@@ -203,16 +193,14 @@
         (do (println "Initialized")
             (rf/dispatch-sync [:initialize]))
 
-        (let [subreddits          (reader/read-string (ru/get :subreddits "{}"))
-              selected-subreddit  (reader/read-string (ru/get :subreddit-selected-name ""))
+        (let [reddit              (reader/read-string (ru/get :reddit "{:selected \"\" :subreddits []}"))
               page-current        (reader/read-string (ru/get :page-current ":Favorites"))
               favs                (reader/read-string (ru/get :favs "{}"))
               account             (reader/read-string (ru/get :account "{:name \"\" :pass \"\" :sync false}"))
               feeds               (reader/read-string (ru/get :rss-feeds "[]"))
               feed-selected       (reader/read-string (ru/get :rss-selected ""))]
             (rf/dispatch-sync [:replace-db {:page-current page-current
-                                            :subreddits subreddits
-                                            :subreddit-selected-name selected-subreddit
+                                            :reddit reddit
                                             :favs favs
                                             :account account
                                             :rss-feeds feeds
