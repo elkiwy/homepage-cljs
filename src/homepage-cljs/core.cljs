@@ -31,14 +31,6 @@
 
 
 
-
-(defn testfetch [a]
-    (go (let [url "https://api.rss2json.com/v1/api.json?rss_url=http://feeds.feedburner.com/GamasutraNews"
-              response  (<! (http/get url {:with-credentials? false}))]
-        (reset! a response))))
-                 
-
-
 (defn main-page []
     (let [currentPage (rf/subscribe [:page-current])
           db (rf/subscribe [:app-db])
@@ -52,14 +44,7 @@
                     [:div {:class "background" :style {:background-image bg-img}}
                         [navbar currentPage]])
                 [:div {:style {:margin-top "32px" }}
-                    ;[:p "debug"]
-                    ;[:p (str (:rss-feeds @db))]
-                    ;[:p (str (:rss-selected @db))]
-                    ;[:p "end debug"]
-
-                    [(@currentPage pages)]
-                    ;[acicount/account-main]
-                    ]])))
+                    [(@currentPage pages)]]])))
 
 
 
