@@ -78,6 +78,11 @@
 ;; ----------------------------------------------
 ;; XML parsing
 
+(defn urlizeString [s]
+    (clojure.string/replace s " " "%20"))
+
+(defn deurlizeString [s]
+    (clojure.string/replace s "%20" " "))
 
 
 
