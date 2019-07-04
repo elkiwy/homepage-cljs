@@ -6,6 +6,7 @@
                 [re-frame.db :as rfdb]
                 [homepage-cljs.app-state]
                 [homepage-cljs.account :as account]
+                [homepage-cljs.style :as style]
                 [homepage-cljs.reddit :as reddit]
                 [homepage-cljs.favorites :as favs]
                 [homepage-cljs.rss :as rss]
@@ -24,10 +25,11 @@
 
 (defn navbar [cp]
     [:div {:class "navbar"}
-        (for [page pages] ^{:key (name (first page))}
-            [:input {:class "button-simple" :style {:display "block" :margin "auto" :margin-bottom 10 :margin-top 10}
-                        :type "button" :value (name (first page))
-                        :on-click #(rf/dispatch [:page-changed (first page)])}])])
+        (doall (for [page pages] ^{:key (name (first page))}
+            [:input {:class (style/text-button style/col-white 12 "400")
+                     :style {:background "transparent" :display "block" :margin "auto" :margin-bottom 10 :margin-top 10}
+                     :type "button" :value (name (first page))
+                     :on-click #(rf/dispatch [:page-changed (first page)])}]))])
 
 
 
@@ -38,8 +40,8 @@
           testAtom (r/atom nil)]
         (fn []
             [:div 
-                (let [col1 (str "hsl(" @anim ", 50%, 70%)")
-                      col2 (str "hsl(" (+ @anim 80) ", 50%, 70%)")
+                (let [col1 @style/col-accent1
+                      col2 @style/col-accent2
                       bg-img (str "linear-gradient(to bottom right, " col1 ", " col2 ")")]
                     [:div {:class "background" :style {:background-image bg-img}}
                         [navbar currentPage]])

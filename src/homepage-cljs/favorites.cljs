@@ -82,22 +82,35 @@
 ;Single favorite link component
 (defn favs-comp-fav [name link]
     (fn []
-        [:li {:style {:text-align "center" :font-size "12pt"}} [:a {:href link} name]]))
+        [:li {:style {:text-align "center" :margin-bottom 10}}
+            [:a {:class (style/text-link style/col-white 14 "400") :href link} name]]))
 
 ;Single category component
 (defn favs-comp-category [catName hrefs]
-    [:div {:class (homepage-cljs.style/background)
-           :style {:margin "10px" :width "250px"}}
-        [:h3 {:class "favs-category-title" } (utils/deurlizeString (name catName))]
-        [:ul {:class "favs-category-list"}
-            (for [[favName, favLink] hrefs]
-                ^{:key favName} [favs-comp-fav (utils/deurlizeString (name favName)) favLink])]])
+    (let [wid (r/atom 0)
+          animWid (utils/animate wid 250)]
+        (fn []
+            [:div {:class (homepage-cljs.style/background)
+                :style {:margin "10px" :width "250px"}
+                :onMouseEnter #(do (reset! wid 100))
+                :onMouseLeave #(do (reset! wid 0))}
+
+                [:h3 {:class (style/text style/col-white 20 "800")
+                    :style {:margin 0 :padding 16 :text-align "center"}}
+                    (utils/deurlizeString (name catName))]
+
+                [:div {:style {:margin "auto" :backgroundColor @style/col-accent1
+                               :height 2 :width (str @animWid "%")}}]
+
+                [:ul {:style {:list-style-type "none" :padding-left 0}}
+                    (for [[favName, favLink] hrefs]
+                        ^{:key favName} [favs-comp-fav (utils/deurlizeString (name favName)) favLink])]])))
             
 ;Multiple categories generator
 (defn favs-comp-categories []
     (let [favs (rf/subscribe [:favs])]
         (fn []
-            [:div {:class "favs-categories"}
+            [:div {:style {:display "flex" :flex-wrap "wrap" :justify-content "center"}}
                 (for [category (seq @favs)] ^{:key (first category)}
                     [favs-comp-category (first category) (second category)])])))
 

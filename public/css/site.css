@@ -1,4 +1,4 @@
-@font-face{
+/*@font-face{
     font-family: 'myFont';
     src: url('fonts/FiraCode-Regular.woff') format('woff');
 }
@@ -8,6 +8,7 @@
     font-weight: bold;
 }
 
+*/
 
 body {
   font-family: "myFont", "Lucida Console", Monaco, monospace;
@@ -35,6 +36,8 @@ body {
 /* ------------------------------------------------------------------- */
 /* GLOBALS */
 
+
+/*
 a:hover {
 	color: black;
 	text-decoration: underline;}
@@ -55,6 +58,7 @@ input[type="button"]{
   top: 50%;
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);}
+*/
 
 /* ------------------------------------------------------------------- */
 /* BACKGROUND */
@@ -155,37 +159,9 @@ input[type="button"]{
 
 
 
-/* ------------------------------------------------------------------- */
-/* SIMPLE BUTTON */
-
-.button-simple:hover{
-	color: var(--col-white-dark);}
-
-.button-simple{
-	font-size: 10pt;
-	background-color: Transparent;
-	border: none;
-	color: var(--col-white);
-	transition: color 0.3s ease-in-out;}
 
 
-/* ------------------------------------------------------------------- */
-/* FAVS CATEGORIES */
-.favs-category-title{
-	text-align: center;
-	font-size: 18pt;
-	padding: 10px 0px;
-	margin: 0px 0px;}
 
-.favs-category-list{
-	list-style-type: none;
-	padding-left: 0;
-	margin: 4px;}
-
-.favs-categories{
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;}
 
 
 /* ------------------------------------------------------------------- */
