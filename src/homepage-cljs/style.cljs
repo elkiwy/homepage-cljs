@@ -26,14 +26,14 @@
 
 (font-face
   {:font-family "myFont"
-   :src [{:url "../css/fonts/FiraCode-Regular.woff" :format "woff"}]})
+   :src [{:url "css/fonts/FiraCode-Regular.woff" :format "woff"}]})
 
 (font-face
   {:font-family "myFont"
    :font-style "bold"
    :font-weight 800
    :src [
-         {:url "../css/fonts/FiraCode-Medium.woff" :format "woff"}]})
+         {:url "css/fonts/FiraCode-Medium.woff" :format "woff"}]})
 
 
 
