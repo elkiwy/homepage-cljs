@@ -81,3 +81,23 @@
                :text-decoration "underline"}})
 
 
+(defstyles setting-window []
+    {:background-color col-black
+     :position "absolute"
+     :top 0 
+     :transition-property "left"
+     :transition-duration "0.25s"
+     :transition-timing-function "ease-in-out"})
+
+
+(defstyles background-accent-hover []
+    {:background-color @col-accent2
+     :transition-property "background"
+     :transition-duration "0.25s"
+     :transition-timing-function "ease-in-out"
+     :&:hover {:background-color @col-accent1}})
+
+
+
+
+
