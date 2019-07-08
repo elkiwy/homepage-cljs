@@ -11,14 +11,50 @@
 
 ; (homepage-cljs.app-state/app-db)
 
-(defn custom-select-input [items dataAtom]
-    (fn [] 
-        [:select {:on-change #(reset! dataAtom (-> % .-target .-value))} :defaultValue @dataAtom
-            (for [item items] ^{:key item} [:option item])]))
+(def item-v-margin 6)
+(def item-relative-w 80)
+(def item-h 22)
+
+(defn custom-select-input [itemsAtom dataAtom & [extraFunc]]
+    (fn [] [:select {:style {:background-color style/col-white :padding 10
+                            :border-radius 5 :border-width 0
+                            :font-size 14 :font-family "myFont"
+                            :min-height (+ item-h 20)
+                            :width (str "calc(" item-relative-w "% + 20px)")  
+                            :margin (str item-v-margin "px auto")
+                            :color style/col-dark-gray}
+                    :on-change #(do (reset! dataAtom (-> % .-target .-value)) (when-not (nil? extraFunc) (extraFunc)))}
+           :defaultValue @dataAtom
+            (for [item @itemsAtom] ^{:key item} [:option item])]))
 
 (defn custom-text-input [placeholder dataAtom]
     (fn [] [:input {:type "text" :value @dataAtom :placeholder placeholder
-                :on-change #(reset! dataAtom (-> % .-target .-value))}]))
+                   :on-change #(reset! dataAtom (-> % .-target .-value))
+                   :style {:background-color style/col-white :padding 10
+                           :border-radius 5 :border-width 0
+                           :font-size 14 :font-family "myFont"
+                           :height item-h
+                           :width (str item-relative-w "%")
+                           :margin (str item-v-margin "px auto")
+                           :color style/col-dark-gray}}]))
+
+(defn custom-button [name func]
+    (fn [] [:input {:type "button" :value name
+                   :on-click func
+                   :class (style/background-accent-hover)
+                   :style {:text-decoration "none"
+                           :border-radius 5 :border-width 0 :color style/col-black-full
+                           :font-family "myFont" :font-size 16 :font-weight "800"
+                           :min-height (* item-h 2) :margin (str item-v-margin "px auto")
+                           :width (str "calc(" item-relative-w "% + 20px)")  
+                           :padding 10}}]))
+
+
+(defn custom-header [level label]
+    (fn [] [(keyword (str "h" level)) {:class (style/text style/col-white 28 "800")
+                                      :style {:margin-bottom 12 :text-align "center"}}
+              label]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Add a favorite input section 
@@ -30,7 +66,10 @@
           linkAtom (r/atom "")
           cateAtom (r/atom (if (empty? @favs) "" (str (key (first @favs)))))
           removeCateAtom (r/atom "")
+
           removeFavAtom  (r/atom "")
+          removeFavOptionsAtom (r/atom [])
+                
           nameCatAtom (r/atom "")
           removeCategoryAtom (r/atom "")]
         (fn []
@@ -38,40 +77,38 @@
             (when (empty? (clojure.string/trim @cateAtom))
                 (reset! cateAtom (if (empty? @favs) "" (key (first @favs)))))
 
-            [:div {:class "settings" :style {:transform (str "scale(" @size ")")  }}
+            [:div {:class (style/setting-window)
+                   :style {:justify-content "center" :display "flex" :flex-direction "column" :position "fixed"
+                           :width 480 :height "100%" :overflow-y "scroll" :top 0 :padding-top 210
+                           :left (str "calc(100% - " (* @size 480) "px" )}}
                 ;Close button
-                [:input {:style {:float "right"} :type "button" :value "x" :on-click #(swap! size utils/toggleScale)}]
+                [custom-button "Back" #(swap! size utils/toggleScale)]
 
                 ;Category
-                [:h4 {:style {:margin-bottom 0}} "Add a category"]
+                [custom-header 4 "Add a category"]
                 [custom-text-input "Name" nameCatAtom]
-                [:input {:type "button" :value "Add to Favorite"
-                        :on-click #(rf/dispatch [:favorite-category-added @nameCatAtom])}]
+                [custom-button "Add Category" #(rf/dispatch [:favorite-category-added @nameCatAtom])]
 
                 ;Favorite
-                [:h4 {:style {:margin-bottom 0 }} "Add a favorite"]
+                [custom-header 4 "Add a favorite"]
                 [custom-text-input "Name" nameAtom]
                 [custom-text-input "URL" linkAtom]
-                [custom-select-input (map #(utils/deurlizeString (name (first %))) (seq @favs)) cateAtom]
-                [:input {:type "button" :value "Add to Favorite"
-                                        :on-click #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])}]
+                [custom-select-input (r/atom (map #(utils/deurlizeString (name (first %))) (seq @favs))) cateAtom]
+                [custom-button "Add Favorite" #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])]
 
                 ;Remove fav
-                [:h4 {:style {:margin-bottom 0 }} "Remove a favorite"]
-                [custom-select-input (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs))) removeCateAtom]
-                [:select {:on-change #(reset! removeFavAtom (-> % .-target .-value))} :defaultValue ""
-                    [:option ""]
-                    (for [fav (seq (get @favs (keyword (utils/urlizeString @removeCateAtom))))]
-                        ^{:key (first fav)} [:option (utils/deurlizeString (name (first fav)))])]
+                [custom-header 4 "Remove a favorite"]
+                [custom-select-input (r/atom (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs)))) removeCateAtom
+                    (fn [] (reset! removeFavOptionsAtom (map #(utils/deurlizeString (name (first %)))
+                                                       (seq (get @favs (keyword (utils/urlizeString @removeCateAtom)))))))]
+                [custom-select-input removeFavOptionsAtom removeCateAtom]
+                [custom-button "Remove Favorite" #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])]
 
-                [:input {:type "button" :value "Remove from Favorite"
-                                        :on-click #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])}]
 
                 ;Remove category
-                [:h4 {:style {:margin-bottom 0 }} "Remove a Category"]
-                [custom-select-input (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs))) removeCategoryAtom]
-                [:input {:type "button" :value "Remove from categories"
-                                        :on-click #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])}]
+                [custom-header 4 "Remove a Category"]
+                [custom-select-input (r/atom (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs)))) removeCategoryAtom]
+                [custom-button "Remove Category" #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])]
                 ])))
 
 
@@ -121,12 +158,12 @@
 
 ;Main favorites component
 (defn favs-main []
-    (let [sizeSetting (r/atom 0)]
+    (let [sizeSetting (r/atom 1)]
         (fn []
             [:div 
                 [utils/page-settings #(swap! sizeSetting utils/toggleScale)]
-
-                [:h1 {:style {:margin-top -10 :text-align "center"}} "Favorites"]
+                [:h1 {:class (style/text style/col-black-full 48 "bold")
+                      :style {:margin-top -10 :text-align "center"}} "Favorites"]
                 [favs-comp-settings sizeSetting]
                 [favs-comp-categories]])))
 
