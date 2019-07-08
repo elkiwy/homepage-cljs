@@ -75,6 +75,7 @@ input[type="button"]{
 /* ------------------------------------------------------------------- */
 /* NAV BAR */
 
+/*
 .navbar{
 	background: hsla(0, 5%, 5%, 0.975);
 	position: absolute;
@@ -83,6 +84,7 @@ input[type="button"]{
 	width: var(--navbar-width);
 	height: 100%;
 	padding-top: 128px;}
+*/
 
 /* ------------------------------------------------------------------- */
 /* SETTING ICON */
