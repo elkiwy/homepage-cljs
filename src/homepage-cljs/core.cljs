@@ -25,7 +25,8 @@
 (def pages {:Favorites favs/favs-main :Reddit reddit/subreddit-main :Rss rss/rss-main :Account account/account-main})
 
 (defn navbar [cp]
-    [:div {:style {:backgroundColor style/col-black :position "absolute"
+    [:div {:class (style/background)
+           :style {:position "absolute"
                    :top 0 :left 0 :width navbar-width :height "100%" :padding-top 128} }
         (doall (for [page pages] ^{:key (name (first page))}
             [:input {:class (style/text-button style/col-white 12 "800")
