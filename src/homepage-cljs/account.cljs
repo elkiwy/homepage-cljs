@@ -2,6 +2,8 @@
     (:require-macros [cljs.core.async.macros :refer [go]])
     (:require [cljs.reader :as reader]
               [homepage-cljs.utils :as utils]
+              [homepage-cljs.style :as style]
+              [homepage-cljs.ui :as ui]
               [reagent.core :as r]
               [goog.crypt.base64 :as b64]
               [re-frame.core :as rf]
@@ -93,13 +95,14 @@
 
 (defn account-with-account [account logAtom]
     (fn []
-        [:div
-            [:h2 {:style {:margin-bottom 0}} "Manage account"]
-            [:p {:style {:margin 0}} (str "Logged in as " (:name @account))]
-            [:input {:type "button" :value (str "Manually upload to " (:name @account) "'s cloud")
-                        :on-click #(addConfig (:name @account) (:pass @account) logAtom nil)}]
-            [:input {:type "button" :value "Log out"
-                        :on-click #(do (rf/dispatch-sync [:replace-db {}]) (rf/dispatch-sync [:initialize]) (rf/dispatch-sync [:page-changed :Account]))}]]))
+        [:div {:style {:display "flex" :flex-direction "column" :justify-content "center"}}
+
+            [ui/custom-header 2 "Manage account" {:color style/col-black}]
+            [ui/custom-header 4 (str "Logged in as " (:name @account)) {:color style/col-black :font-size 20}]
+            [ui/custom-button (str "Manually upload to " (:name @account) "'s cloud") #(addConfig (:name @account) (:pass @account) logAtom nil)
+                {:width "auto" :margin "8px auto" :color style/col-white} style/col-black]
+            [ui/custom-button "Log out" #(do (rf/dispatch-sync [:replace-db {}]) (rf/dispatch-sync [:initialize]) (rf/dispatch-sync [:page-changed :Account]))
+                {:width "auto" :margin "8px auto" :color style/col-white} style/col-black]]))
 
 
 
@@ -108,21 +111,21 @@
     (let [usernameAtom (r/atom "")
           passwordAtom (r/atom "")]
         (fn []
-            [:div
+            [:div {:style {:display "flex" :flex-direction "column" :justify-content "center"
+                           :padding "0px 20%"}}
                 ;Register
-                [:h2 {:style {:margin-bottom 0}} "Account"]
-                [:input {:type "text" :value @usernameAtom :placeholder "Username" :style {:display "block"}
-                            :on-change #(reset! usernameAtom (-> % .-target .-value))}]
-                [:input {:type "password" :value @passwordAtom :placeholder "Password" :style {:display "block"}
-                            :on-change #(reset! passwordAtom (-> % .-target .-value))}]
-                [:input {:type "button" :value "Create an account" 
-                            :on-click #(addConfig @usernameAtom @passwordAtom logAtom nil)}]
-                ;Login
-                [:input {:type "button" :value "Log in"
-                            :on-click #(getConfig @usernameAtom @passwordAtom logAtom)}]
+                [ui/custom-header 2 "Account" {:color style/col-black}]
 
-                [:input {:type "button" :value "Reset data" :style {:display "block"}
-                            :on-click #(do (rf/dispatch-sync [:replace-db {}]) (rf/dispatch-sync [:initialize]) (rf/dispatch-sync [:page-changed :Account]))}]])))
+                [ui/custom-text-input "Username" usernameAtom]
+                [ui/custom-text-input "Password" passwordAtom]
+                [ui/custom-button "Create an account" #(addConfig @usernameAtom @passwordAtom logAtom nil)
+                    {:color style/col-white} style/col-black]
+
+                ;Login
+                [ui/custom-button "Log in" #(getConfig @usernameAtom @passwordAtom logAtom)
+                    {:color style/col-white} style/col-black]
+                [ui/custom-button "Reset data" #(do (rf/dispatch-sync [:replace-db {}]) (rf/dispatch-sync [:initialize]) (rf/dispatch-sync [:page-changed :Account]))
+                    {:color style/col-white} style/col-black]])))
 
 
 
@@ -133,7 +136,8 @@
           logAtom (r/atom "") ]
         (fn []
             [:div
-                [:h1 "Cloud Sync"]
+
+                [ui/custom-header 1 "Cloud Sync" {:color style/col-black :font-size 48}]
 
                 (if (not (empty? (:name @account)))
                     [account-with-account account logAtom]
