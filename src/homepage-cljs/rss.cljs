@@ -4,6 +4,8 @@
                 [re-frame.core :as rf]
                 [homepage-cljs.app-state :as state]
                 [homepage-cljs.utils :as utils]
+                [homepage-cljs.ui :as ui]
+                [homepage-cljs.style :as style]
                 [tubax.core :as tubaxcore]
                 [hickory.core :as hc] 
                 [cljs-http.client :as http]
@@ -12,11 +14,17 @@
 
 
 
+; --------------------------------------------------------------------------------------------------------
+; RSS Utils
+
 (def rss-proxy "https://api.rss2json.com/v1/api.json?rss_url=")
+(def data-atom (r/atom nil))
+
+
 
 (defn fetch-rss [rssName rssUrl]
     (go (let [response (<! (http/get (str rss-proxy rssUrl) {:with-credentials? false}))]
-            (rf/dispatch [:rss-fetched-data rssName (:body response)]))))
+            (reset! data-atom [rssName (:body response)]))))
 
 
 
@@ -30,18 +38,13 @@
 
 
 
-
-
-
 (defn is-tag? [frag tag]
-    ;(println "BOH? " (first frag) " - " tag)
     (= (first frag) tag))
 
 
+
 (defn find-tag [fragment tag]
-    ;(println "---")
     (loop [frag fragment] 
-        ;(println frag)
         (cond
             (empty? frag)
                 nil
@@ -56,20 +59,29 @@
                 (recur (rest frag)))))
 
 
-;(find-tag [:div [:p "cippo"] [:img "coso"]])
-
-;(find-tag [:div {:class "featured-image"} [:img {:src "https://www.tomshw.it/images/images/2019/05/blood-truth-32777.768x432.jpg", :alt ""}]] :img)
 
 (defn rss-item-component [itemData]
     (fn []
-        [:div {:class "rss-item"}
-
+        [:div {:class (style/background)
+               :style {:clear "both" :min-height 72 :padding 12 :margin 12}}
             (let [descriptionHtml (:description itemData)
-                  descriptionData (map hc/as-hiccup (hc/parse-fragment descriptionHtml))]
-                (find-tag (first descriptionData) :img))
+                  descriptionData (map hc/as-hiccup (hc/parse-fragment descriptionHtml))
+                  component       (find-tag (first descriptionData) :img)
+                  componentData   (second component)
+                  componentStyle  {:float "left" :overflow "auto" :width 72 :height 72 :border-radius 2
+                                   :box-shadow "4px 4px 16px -10px black" :margin-right 12}
+                  styledComponent [:img (assoc componentData :style componentStyle)]]
+                (println "COSE1" (find-tag (first descriptionData) :img))
+                (println "COSE2" styledComponent)
+                styledComponent)
             ;Title
-            [:h2 [:a {:href (:link itemData)} (:title itemData)]]
+            [:h2 {:style {:margin 0 :margin-bottom 16}}
+                [:a {:style {:text-decoration "none"} :href (:link itemData)}
+                    [:div {:class [(style/text-link style/col-white 14 "400") ]}
+                        (:title itemData)]]]
 ]))
+
+
 
 (defn rss-settings [size]
     (let [newFeedUrlAtom (r/atom "")
@@ -102,28 +114,29 @@
                                         :on-click #(rf/dispatch [:rss-removed @remFeedNameAtom])}]
                 ])))
 
-;(rf/dispatch [:rss-added ["Gamasutra" "http://feeds.feedburner.com/GamasutraNews"]])
-;(rf/dispatch [:rss-selected-changed "Gamasutra"])
-
 
 
 (defn rss-feed []
-    (let [feed-data   (rf/subscribe [:rss-selected-data])
-          selected    (rf/subscribe [:rss-selected-name])
+    (let [selected    (rf/subscribe [:rss-selected-name])
           selectedUrl (rf/subscribe [:rss-selected-url])]
         (fn []
             [:div 
                 (cond
+                    ;Case no feed is selected
                     (empty? @selected)
                         [:p "No rss selected"]
-                    (nil? @feed-data)
+
+                    ;Case still fetching data
+                    (nil? (second @data-atom))
                         (do (fetch-rss @selected @selectedUrl)
                             [:p (str "Fetching " @selected "...")])
+
+                    ;Normal case with data
                     :else
-                        (let [items (get-in @feed-data [:items])]
-                            (println "COUNT: " (count items) ", " @feed-data)
+                        (let [items (get-in (second @data-atom) [:items])]
                             (for [item items]
                                 ^{:key (hash (str item))} [rss-item-component item])))])))
+
 
 
 (defn select-feed [feedName feedUrl]
@@ -135,16 +148,21 @@
     (let [feed-name (rf/subscribe [:rss-selected-name])
           feeds (rf/subscribe [:rss-feeds])]
         (fn []
-            [:div
-                [:div {:class "subreddits-buttons"}
-                    (for [feed @feeds] 
-                        (let [feedName (first feed)] ^{:key feedName}
-                            [:input {:type "button" :value feedName
-                                        :on-click #(select-feed feedName (second feed))}]))]
-                [:h1 {:style {:margin-top -10 :text-align "center"}}
-                    (str "RSS: " @feed-name)]]
 
-            )))
+            [:div
+                ;Subreddit buttons
+                [:div {:style {:margin "0px 96px" :margin-top -26 :margin-bottom 30
+                               :display "flex" :flex-wrap "wrap" :justify-content "center"}}
+                    (for [feed (seq @feeds)] 
+                        (let [feedName (first feed)] ^{:key feedName}
+                            [ui/custom-button feedName #(select-feed feedName (second feed))
+                                {:height 38 :padding 10 :width "auto"
+                                 :margin 1 :color style/col-white}
+                                style/col-black]))]
+                ;RSS Title Hrader
+                [ui/custom-header 1 (str "RSS: " @feed-name)
+                    {:color style/col-black-full :font-size 48}]])))
+
 
 (defn rss-main []
     (let [settingSize (r/atom 0)]
@@ -154,10 +172,7 @@
                 [rss-settings settingSize]
 
                 [rss-header]
-                [rss-feed]
-
-
-                ])))
+                [rss-feed]])))
 
 
 

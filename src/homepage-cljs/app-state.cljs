@@ -17,12 +17,11 @@
         (save-state @rfdb/app-db))
     ([data]
         (when (not (nil? (:page-current data)))
-            (ru/set! :reddit                  (pr-str (:reddit data)))
-            (ru/set! :favs                    (pr-str (:favs data)))
-            (ru/set! :account                 (pr-str (:account data)))
-            (ru/set! :rss-feeds               (pr-str (:rss-feeds data)))
-            (ru/set! :rss-selected            (pr-str (:rss-selected data)))
-            (ru/set! :page-current            (pr-str (:page-current data))))))
+            (ru/set! :reddit       (pr-str (:reddit data)))
+            (ru/set! :favs         (pr-str (:favs data)))
+            (ru/set! :account      (pr-str (:account data)))
+            (ru/set! :rss          (pr-str (:rss data)))
+            (ru/set! :page-current (pr-str (:page-current data))))))
 
 
 
@@ -56,35 +55,41 @@
 (rf/reg-sub :reddit-selected ;A string
     (fn [db _] (:selected (:reddit db))))
 
-
 ;rss
 (rf/reg-sub :rss-feeds
-    (fn [db _] (:rss-feeds db)))
-
-(rf/reg-sub :rss-data
-    (fn [db _] (:rss-data db)))
+    (fn [db _] (get-in db [:rss :feeds] {})))
 
 (rf/reg-sub :rss-selected-name
-    (fn [db _] (:rss-selected db)))
+    (fn [db _]
+        (let [default (-> (get-in db [:rss :feeds] {}) seq first str)
+              name    (get-in db [:rss :selected] default)]
+            (utils/deurlizeString name))))
 
 (rf/reg-sub :rss-selected-url
     :<- [:rss-selected-name]
     :<- [:rss-feeds]
     (fn [[name feeds] _]
-        (second (first (filter #(= name (first %)) feeds)))))
-
-(rf/reg-sub :rss-selected-data
-    :<- [:rss-selected-name]
-    :<- [:rss-data]
-    (fn [[name rss-data] _]
-        (get-in rss-data [name])))
-    
+        (get feeds (utils/urlizeString name) "")))
 
 
 
 ;; -----------------------------------------------------------------------------------------------------
 ;; Events
 
+ ;"Gamasutra"
+ ;"http://feeds.feedburner.com/GamasutraNews"
+
+
+
+;(let [db @re-frame.db/app-db
+      ;db (dissoc db :rss-feeds)
+      ;db (dissoc db :rss-selected)
+      ;db (dissoc db :rss-data)
+      ;db (dissoc db :subreddits)
+      ;db (dissoc db :subreddit-selected-name)
+      ;db (assoc db :rss {:selected "" :feeds {}})]
+   ;(homepage-cljs.account/updateConfig db)
+;)
 
 
 
@@ -102,9 +107,11 @@
               :account {:name "" :pass "" :sync false}
               :reddit {:selected "" :subreddits []}
               :favs {}
-              :rss-feeds [] ;Vector of Name-Link pairs
-              :rss-selected "" ;String
-              :rss-data {} ;String - Data map
+              :rss {:selected "" :feeds {}}
+
+              ;:rss-feeds [] ;Vector of Name-Link pairs
+              ;:rss-selected "" ;String
+              ;:rss-data {} ;String - Data map
 })) 
 
 (rf/reg-event-db :replace-db
@@ -123,7 +130,7 @@
 ;Reddit
 (rf/reg-event-db :reddit-selected-changed
     (fn [db [_ newSubreddit]]
-        (update-db-and-save false #(assoc-in db [:reddit :selected] newSubreddit))))
+        (update-db-and-save true #(assoc-in db [:reddit :selected] newSubreddit))))
 
 (rf/reg-event-db :reddit-added-subreddit
     (fn [db [_ sub]]
@@ -159,21 +166,19 @@
 ;rss
 (rf/reg-event-db :rss-selected-changed
     (fn [db [_ newRss]]
-        (update-db-and-save false #(assoc db :rss-selected newRss))))
+        (update-db-and-save true #(assoc-in db [:rss :selected] (utils/urlizeString newRss)))))
 
 (rf/reg-event-db :rss-added
     (fn [db [_ name url]]
-        (update-db-and-save true #(update-in db [:rss-feeds] conj [name url]))))
+        (update-db-and-save true
+            #(assoc-in db [:rss :feeds (utils/urlizeString name)] url))))
 
 (rf/reg-event-db :rss-removed
     (fn [db [_ name]]
-        (let [feeds (:rss-feeds db)
-              item  (first (filter #(= (first %) name) feeds))]
-            (update-db-and-save true #(update-in db [:rss-feeds] remove-vec item)))))
+        (let [feeds (get-in db [:rss :feeds])
+              newFeeds (dissoc feeds (utils/urlizeString name))]
+            (update-db-and-save true #(assoc-in db [:rss :feeds] newFeeds)))))
 
-(rf/reg-event-db :rss-fetched-data
-    (fn [db [_ rss newdata]]
-        (update-db-and-save false #(assoc-in db [:rss-data rss] newdata))))
 
 
 ;account
@@ -186,6 +191,11 @@
 ;; -----------------------------------------------------------------------------------------------------
 ;; Save and loading
 
+
+; favorites -> {:Social {:Facebook "..." :Instagram "..."} :Relax {:Youtube "..."}}
+; reddis -> {:selected "clojure" :subreddits ["clojure" "emacs"]}
+; rss -> {:selected "Gamasutra" :feeds {"Gamasutra" "..." "TomsHardware" "..."} }
+
 (defn load-state []
     (if (nil? (reader/read-string (ru/get :page-current)))
         (rf/dispatch-sync [:initialize])
@@ -193,15 +203,12 @@
               page-current        (reader/read-string (ru/get :page-current ":Favorites"))
               favs                (reader/read-string (ru/get :favs "{}"))
               account             (reader/read-string (ru/get :account "{:name \"\" :pass \"\" :sync false}"))
-              feeds               (reader/read-string (ru/get :rss-feeds "[]"))
-              feed-selected       (reader/read-string (ru/get :rss-selected ""))]
+              rss                 (reader/read-string (ru/get :rss "{:selected \"\" :feeds {}}"))]
             (rf/dispatch-sync [:replace-db {:page-current page-current
                                             :reddit reddit
                                             :favs favs
                                             :account account
-                                            :rss-feeds feeds
-                                            :rss-selected feed-selected
-                                            :rss-data {}}
+                                            :rss rss}
                                             true]))))
 
 
