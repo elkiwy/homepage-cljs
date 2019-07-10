@@ -187,12 +187,8 @@
 ;; Save and loading
 
 (defn load-state []
-    (println "COSE" (ru/get :page-current))
     (if (nil? (reader/read-string (ru/get :page-current)))
-
-        (do (println "Initialized")
-            (rf/dispatch-sync [:initialize]))
-
+        (rf/dispatch-sync [:initialize])
         (let [reddit              (reader/read-string (ru/get :reddit "{:selected \"\" :subreddits []}"))
               page-current        (reader/read-string (ru/get :page-current ":Favorites"))
               favs                (reader/read-string (ru/get :favs "{}"))
