@@ -12,7 +12,8 @@
 
 
 
-
+; --------------------------------------------------------------------------------------------------------
+; Costants
 
 (def base-url "https://test.elkiwyart.com/homepage-cljs/")
 (def getUserConfig-endpoint "getUserConfig.php")
@@ -20,7 +21,13 @@
 (def agent "32i1n4kbt52of0wdfsd9fj0hfqd0fb20rjekfbsdkba02")
 
 
-(defn pack-query-parameters [data]
+
+; --------------------------------------------------------------------------------------------------------
+; Networking utilities
+
+(defn pack-query-parameters
+    "Create the query parameters string with the data inside the `data` map."
+    [data]
     (loop [params (seq data)
            result "?"]
         (if (empty? params)
@@ -31,8 +38,10 @@
 
 
 
-
-(defn backend-post-request [endpoint queryParamsData postBodyData callback]
+(defn backend-post-request
+    "Create and send a POST request to a backend endpoint and trigger a callback.
+     Takes an `endpoint` as string, some `queryParamsdata` and `postBodydata` as maps, and a `callback` as a function."
+    [endpoint queryParamsData postBodyData callback]
     (go (let [queryParams           (pack-query-parameters queryParamsData)
               postBodyDataWithAgent (assoc postBodyData :agent agent)
               requestData           {:json-params postBodyDataWithAgent :with-credentials? false}
@@ -40,18 +49,14 @@
             (callback (:body response)))))
               
 
-(backend-post-request getUserConfig-endpoint {:user "gino2"} {:password "peppo2"} (fn [data] (println "callback!")))
 
+; --------------------------------------------------------------------------------------------------------
+; Backend endpoints
 
-;(defn fetch-rss [rssName rssUrl]
-    ;(go (let [response (<! (http/get (str rss-proxy rssUrl) {:with-credentials? false}))]
-            ;(rf/dispatch [:rss-fetched-data rssName (:body response)]))))
-
-
-
-
-
-(defn getConfig [usr psw logAtom]
+(defn getConfig
+    "Retrieve a user's config from the cloud and replace the current app data with it.
+     Takes a `usr` and `psw` as strings and a `logAtom` as an optional atom to log the response."
+    [usr psw logAtom]
     (backend-post-request getUserConfig-endpoint {:user usr} {:password psw}
         (fn [responseBody]
             (let [code (:code responseBody)
@@ -66,7 +71,12 @@
                     (when (not (nil? logAtom)) (reset! logAtom (str "Config downloaded failed with code " code))))))))
 
 
-(defn addConfig [usr psw logAtom targetDb]
+
+(defn addConfig
+    "Post the current app data to the cloud.
+     Takes a `usr` and `psw` as strings, a `logAtom` as an optional atom to log the response,
+     and a `targetDb` as optional app-data to send to the cloud instead of the current loaded one."
+    [usr psw logAtom targetDb]
     (let [fullConfig (if (nil? targetDb) @rfdb/app-db targetDb)
           slimConfig (update fullConfig :subreddits utils/discard-json)
           base64     (b64/encodeString (str slimConfig))]
@@ -79,19 +89,37 @@
                         (reset! logAtom (str "Config uploaded failed with code " (:code responseBody)))))))))
 
 
-(defn updateConfig [updated-db]
+
+; --------------------------------------------------------------------------------------------------------
+; Shorter and simpler endpoint functions 
+
+(defn updateConfig
+    "Updates the config on the cloud with a newer app config.
+     Reads the user credentials from the current loaded app config.
+     Takes a `updated-db` as an app data map."
+    [updated-db]
     (let [{:keys [name pass sync]} (:account updated-db)]
         (when (not (empty? name))
             (addConfig name pass nil updated-db))))
 
 
-(defn try-download-state []
+
+(defn try-download-state
+    "Tries to download a user config from the cloud,
+     if successful replaces the current config with the one downloaded.
+     Reads the user credentials from the current loaded app config."
+    []
     (let [account (:account @rfdb/app-db)]
         (when (not (empty? (:name account)))
             (getConfig (:name account) (:pass account) nil))))
 
 
-(defn account-with-account [account logAtom]
+
+; --------------------------------------------------------------------------------------------------------
+; React component for the Account view
+
+(defn account-with-account
+    [account logAtom]
     (fn []
         [:div
             [:h2 {:style {:margin-bottom 0}} "Manage account"]
