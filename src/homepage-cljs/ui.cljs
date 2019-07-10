@@ -24,8 +24,8 @@
 
 
 
-(defn custom-text-input [placeholder dataAtom]
-    (fn [] [:input {:type "text" :value @dataAtom :placeholder placeholder
+(defn custom-text-input [placeholder dataAtom & [password?]]
+    (fn [] [:input {:type (if password? "password" "text") :value @dataAtom :placeholder placeholder
                    :on-change #(reset! dataAtom (-> % .-target .-value))
                    :style {:background-color style/col-white :padding item-padding
                            :border-radius 5 :border-width 0

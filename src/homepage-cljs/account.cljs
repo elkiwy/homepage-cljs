@@ -145,9 +145,8 @@
                            :padding "0px 20%"}}
                 ;Register
                 [ui/custom-header 2 "Account" {:color style/col-black}]
-
                 [ui/custom-text-input "Username" usernameAtom]
-                [ui/custom-text-input "Password" passwordAtom]
+                [ui/custom-text-input "Password" passwordAtom true]
                 [ui/custom-button "Create an account" #(addConfig @usernameAtom @passwordAtom logAtom nil)
                     {:color style/col-white} style/col-black]
 
