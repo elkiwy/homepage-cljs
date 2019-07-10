@@ -5,6 +5,7 @@
                 [re-frame.core :as rf]
                 [homepage-cljs.app-state :as state]
                 [homepage-cljs.utils :as utils]
+                [homepage-cljs.ui :as ui]
                 [homepage-cljs.style :as style]
                 [cljss.core :as ss]              
                 [cljs-http.client :as http]
@@ -34,24 +35,36 @@
 
 ;; -------------------------
 ;; Components
+
+
+
+
 (defn subreddit-header []
     (let [sub  (rf/subscribe [:reddit-selected])
           subs (rf/subscribe [:reddit-subreddits])]
         (fn []
             [:div
-                [:div {:class "subreddits-buttons"}
+                ;Subreddit selection buttons
+                [:div {:style {:margin "0px 96px" :margin-top -26 :margin-bottom 30
+                               :display "flex" :flex-wrap "wrap" :justify-content "center"}}
                     (for [subName @subs] ^{:key subName}
-                        [:input {:type "button" :value subName
-                                 :on-click #(select-subreddit subName)}])
-                    ]
-                (let [s (if (empty? @sub) "" (str " - " (clojure.string/capitalize @sub)))]
-                    [:h1 {:style {:margin-top -10 :text-align "center"}} (str "Reddit" s)])])))
+                        [ui/custom-button subName #(select-subreddit subName)
+                            {:height 38 :padding 10 :width "auto"
+                             :margin 1 :color style/col-white}
+                            style/col-black])]
+
+                ;Reddit title
+                [ui/custom-header 1 (if (empty? @sub) "" (str "r/" (clojure.string/capitalize @sub)))
+                    {:color style/col-black-full :font-size 48}]])))
+
+
 
 
 (defn subreddit-post-link [post-data]
     (fn []
-        [:a {:href (:url post-data) :target "_blank"} 
-            [:div {:class (style/background) :style {:padding 10 :margin "16px 48px"}}
+        [:a {:style {:text-decoration "none"} :href (:url post-data) :target "_blank"} 
+            [:div {:class [(style/text-link style/col-white 14 "400") (style/background)]
+                   :style {:padding 14 :margin "16px 48px"}}
                  (:title post-data)]]))
 
 
@@ -63,17 +76,25 @@
     (let [selected (rf/subscribe [:reddit-selected])]
         (fn []
             (cond
+                ;Case No sub selected
                 (empty? @selected)
-                    [:p {:style {:margin "auto" :text-align "center"}} "No subreddit selected."]
+                    [:p {:style {:margin "auto" :text-align "center"}}
+                        "No subreddit selected."]
 
+                ;Case Fetching data
                 (empty? (get-in @dataAtom [@selected]))
                     (do (fetch-subreddit @selected)
-                        [:p {:style {:margin "auto" :text-align "center"}} (str "Fetching \"" @selected "\" subreddit...")])
+                        [:p {:style {:margin "auto" :text-align "center"}}
+                            (str "Fetching \"" @selected "\" subreddit...")])
+
+                ;Case with posts
                 :else 
                     (let [posts (:children (:data (get-in @dataAtom [@selected])))]
                         [:div
                             (for [post posts] ^{:key (:id (:data post))}
                                         [subreddit-post-link (:data post)])])))))
+
+
 
               
 
@@ -82,36 +103,28 @@
           newSubNameAtom (r/atom "")
           remSubNameAtom (r/atom "")]
         (fn []
-            [:div {:class "settings" :style {:transform (str "scale(" @size ")")  }}
+            ;[:div {:class "settings" :style {:transform (str "scale(" @size ")")  }}
+            [:div {:class (style/setting-window)
+                   :style {:width 480 :padding-top 16 :left (str "calc(100% - " (* @size 480) "px" )}}
+
                 ;Close button
-                [:input {:style {:float "right"} :type "button" :value "x" :on-click #(swap! size utils/toggleScale)}]
+                [ui/custom-button "Back" #(swap! size utils/toggleScale)]
 
                 ;Add subreddit
-                [:h4 {:style {:margin-bottom 0 }} "Add a subreddit"]
-
-                [:input {:type "text" :value @newSubNameAtom :placeholder "subreddit-name"
-                        :on-change #(reset! newSubNameAtom (-> % .-target .-value))}]
-                [:input {:type "button" :value "Add"
-                                        :on-click #(rf/dispatch [:subreddit-added @newSubNameAtom])}]
+                [ui/custom-header 4 "Add a subreddit"]
+                [ui/custom-text-input "Subreddit Name" newSubNameAtom]
+                [ui/custom-button "Add" #(rf/dispatch [:subreddit-added @newSubNameAtom])]
 
                 ;Remove fav
-                [:h4 {:style {:margin-bottom 0 }} "Remove a subreddit"]
-
-                [:select {:on-change #(reset! remSubNameAtom (-> % .-target .-value))} :defaultValue ""
-                    [:option  ""]
-                    (for [subname (seq @subs)]
-                        ^{:key (first subname)} [:option (first subname)])]
-
-                [:input {:type "button" :value "Remove"
-                                        :on-click #(rf/dispatch [:subreddit-removed @remSubNameAtom])}]
-                ])))
+                [ui/custom-header 4 "Remove a subreddit"]
+                [ui/custom-select-input (r/atom (seq @subs)) remSubNameAtom]
+                [ui/custom-button "Remove" #(rf/dispatch [:subreddit-removed @remSubNameAtom])]])))
 
 
 (defn subreddit-main []
     (let [settingSize (r/atom 0)]
         [:div
             [utils/page-settings #(swap! settingSize utils/toggleScale)]
-
             [subreddit-settings settingSize]
             [subreddit-header]
             [subreddit-posts]]))

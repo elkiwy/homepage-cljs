@@ -75,6 +75,7 @@ input[type="button"]{
 /* ------------------------------------------------------------------- */
 /* NAV BAR */
 
+/*
 .navbar{
 	background: hsla(0, 5%, 5%, 0.975);
 	position: absolute;
@@ -83,6 +84,7 @@ input[type="button"]{
 	width: var(--navbar-width);
 	height: 100%;
 	padding-top: 128px;}
+*/
 
 /* ------------------------------------------------------------------- */
 /* SETTING ICON */
@@ -167,6 +169,7 @@ input[type="button"]{
 /* ------------------------------------------------------------------- */
 /* SETTINGS */
 
+/*
 .subreddits-buttons{
 	margin: 0px 96px;
 	margin-top: -26px;
@@ -184,7 +187,7 @@ input[type="button"]{
 .subreddits-buttons input{
 	-webkit-appearance: none; 
 	-moz-appearance: none;
-	appearance: none;       /* remove default arrow */
+	appearance: none;       
 	height: 26px;
 	padding: 4px 10px;
 	margin: 1px;
@@ -200,7 +203,7 @@ input[type="button"]{
 	transition-duration: 0.25s;
 	transition-timing-function: ease-in-out;
 }
-
+*/
 
 /* ------------------------------------------------------------------- */
 /* SETTINGS */

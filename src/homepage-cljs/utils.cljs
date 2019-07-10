@@ -2,6 +2,8 @@
     (:require-macros [reagent.ratom :as ratom])
     (:require [reagent.core :as r]))
 
+(def app-version "0.0.1")
+
 
 ;Takes the subreddits map and outputs the map without the jsons
 (defn discard-json [subreddits]

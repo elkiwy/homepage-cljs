@@ -41,14 +41,14 @@
 
 (defstyles background []
     {:background-color col-black
-     :box-shadow (str "4px 4px 16px -10px " fg1)
+     :box-shadow (str "4px 4px 20px -10px " col-black-full)
      :transition-property "box-shadow"
      :transition-duration "0.2s"
      :transition-timing-function "ease-in-out"
      :border-width "0px"
      :border-radius "2px"
      :border-style "solid"
-     :&:hover {:box-shadow (str "8px 8px 26px -10px " fg1)}})
+     :&:hover {:box-shadow (str "8px 8px 24px -10px " col-black-full)}})
 
 (defstyles text [col size weight]
     {:font-size (str size "pt")
@@ -79,5 +79,29 @@
      :transition-timing-function "ease-in-out"
      :&:hover {:color @col-accent1
                :text-decoration "underline"}})
+
+
+(defstyles setting-window []
+    {:background-color (str col-black-full "f0")
+     :display "flex"
+     :flex-direction "column"
+     :position "fixed"
+     :height "100%"
+     :overflow-y "scroll"
+     :top 0
+     :transition-property "left"
+     :transition-duration "0.25s"
+     :transition-timing-function "ease-in-out"})
+
+
+(defstyles background-accent-hover [& [bg-col]]
+    {:background-color (if (nil? bg-col) @col-accent2 bg-col)
+     :transition-property "background"
+     :transition-duration "0.25s"
+     :transition-timing-function "ease-in-out"
+     :&:hover {:background-color @col-accent1}})
+
+
+
 
 
