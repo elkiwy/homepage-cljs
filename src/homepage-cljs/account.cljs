@@ -121,10 +121,10 @@
 ; React component for the Account view
 
 (defn account-with-account
+    "Displays the elements for when the app has a valid cloud config with a username."
     [account logAtom]
     (fn []
         [:div {:style {:display "flex" :flex-direction "column" :justify-content "center"}}
-
             [ui/custom-header 2 "Manage account" {:color style/col-black}]
             [ui/custom-header 4 (str "Logged in as " (:name @account)) {:color style/col-black :font-size 20}]
             [ui/custom-button (str "Manually upload to " (:name @account) "'s cloud") #(addConfig (:name @account) (:pass @account) logAtom nil)
@@ -135,7 +135,9 @@
 
 
 
-(defn account-without-account [account logAtom]
+(defn account-without-account
+    "Displays the elements for when the app doesn't have a cloud config."
+    [account logAtom]
     (let [usernameAtom (r/atom "")
           passwordAtom (r/atom "")]
         (fn []
@@ -159,21 +161,23 @@
 
 
 
-(defn account-main []
+(defn account-main
+    "Root of the account view, this will get called by core.cljs."
+    []
     (let [account (rf/subscribe [:account])
           logAtom (r/atom "") ]
         (fn []
             [:div
-
+                ;Header
                 [ui/custom-header 1 "Cloud Sync" {:color style/col-black :font-size 48}]
 
+                ;Form fields
                 (if (not (empty? (:name @account)))
                     [account-with-account account logAtom]
                     [account-without-account account logAtom])
 
-                [:div [:p @logAtom]]
-
-                ])))
+                ;Debug log atom
+                [:div [:p @logAtom]]])))
 
 
 
