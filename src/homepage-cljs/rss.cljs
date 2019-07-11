@@ -15,52 +15,86 @@
 
 
 ; --------------------------------------------------------------------------------------------------------
-; RSS Utils
+; Data fetching
 
 (def rss-proxy "https://api.rss2json.com/v1/api.json?rss_url=")
 (def data-atom (r/atom nil))
 
 
 
-(defn fetch-rss [rssName rssUrl]
+(defn fetch-rss
+    "Fetch the feed to get the data and save it to the data-atom.
+     Takes `rssName` as the visible name of the feed and `rssUrl` as the link to fetch."
+    [rssName rssUrl]
     (go (let [response (<! (http/get (str rss-proxy rssUrl) {:with-credentials? false}))]
             (reset! data-atom [rssName (:body response)]))))
 
 
+(defn select-feed
+    "Function to change the current feed and fetch the data of the new one."
+    [feedName feedUrl]
+    (fetch-rss feedName feedUrl)
+    (rf/dispatch [:rss-selected-changed feedName]))
 
-(defn is-not-a-useless-image? [data]
+
+
+
+
+; --------------------------------------------------------------------------------------------------------
+; Data manipulation
+
+(defn is-not-a-useless-image?
+    "Predicate to check if a hiccup element is an image too small to be useful.
+     Takes `data` as an hiccup element. Returns a boolean."
+    [data]
     (if (= (get data 0) :img) 
         (let [style (get data 1)
               img-h (int (:height style))
-              img-w (int (:width style))]
+              img-w (int (:width  style))]
             (not (or (and (not (nil? img-w)) (< img-w 100)) (and (not (nil? img-h)) (< img-h 100)))))
         true))
 
 
 
-(defn is-tag? [frag tag]
+(defn is-tag?
+    "Check if an hiccup fragment `frag` is of a certain `tag`."
+    [frag tag]
     (= (first frag) tag))
 
 
 
-(defn find-tag [fragment tag]
+(defn find-tag
+    "Cycle through and inside a hiccup `fragment` and return the fragment that has a certain `tag`."
+    [fragment tag]
     (loop [frag fragment] 
         (cond
+            ;Default case with empty fragments
             (empty? frag)
                 nil
+            ;Default case with the current fragment being the wanted one
             (is-tag? frag tag)
                 frag
+            ;Recursive case with the current fragment being a vector of frags
             (vector? (first frag))
                 (let [sub-result (find-tag (first frag) tag)]
                     (if (nil? sub-result)
                         (recur (rest frag))
                         sub-result))
+            ;Recursive case discarding the first fragment and looping to the rest
             :else
                 (recur (rest frag)))))
 
 
 
-(defn rss-item-component [itemData]
+
+
+; --------------------------------------------------------------------------------------------------------
+; React components
+
+(defn rss-item-component
+    "React component to display a single item of the rss feed.
+     Takes a `itemData` map with the data of the item."
+    [itemData]
     (fn []
         [:div {:class (style/background)
                :style {:clear "both" :min-height 72 :padding 12 :margin 12}}
@@ -71,19 +105,18 @@
                   componentStyle  {:float "left" :overflow "auto" :width 72 :height 72 :border-radius 2
                                    :box-shadow "4px 4px 16px -10px black" :margin-right 12}
                   styledComponent [:img (assoc componentData :style componentStyle)]]
-                (println "COSE1" (find-tag (first descriptionData) :img))
-                (println "COSE2" styledComponent)
                 styledComponent)
             ;Title
             [:h2 {:style {:margin 0 :margin-bottom 16}}
                 [:a {:style {:text-decoration "none"} :href (:link itemData)}
                     [:div {:class [(style/text-link style/col-white 14 "400") ]}
-                        (:title itemData)]]]
-]))
+                        (:title itemData)]]]]))
 
 
 
-(defn rss-settings [size]
+(defn rss-settings
+    "React component to display the setting panel."
+    [size]
     (let [newFeedUrlAtom (r/atom "")
           newFeedNameAtom (r/atom "")
           feeds (rf/subscribe [:rss-feeds])
@@ -110,13 +143,13 @@
                     (for [feed (seq @feeds)]
                         ^{:key (first feed)} [:option (first feed)])]
 
-                [:input {:type "button" :value "Remove"
-                                        :on-click #(rf/dispatch [:rss-removed @remFeedNameAtom])}]
-                ])))
+                [:input {:type "button" :value "Remove" :on-click #(rf/dispatch [:rss-removed @remFeedNameAtom])}]])))
 
 
 
-(defn rss-feed []
+(defn rss-feed
+    "React component to handle the rss feed items."
+    []
     (let [selected    (rf/subscribe [:rss-selected-name])
           selectedUrl (rf/subscribe [:rss-selected-url])]
         (fn []
@@ -139,16 +172,12 @@
 
 
 
-(defn select-feed [feedName feedUrl]
-    (fetch-rss feedName feedUrl)
-    (rf/dispatch [:rss-selected-changed feedName]))
-
-
-(defn rss-header []
+(defn rss-header
+    "React component to display the header with the buttons."
+    []
     (let [feed-name (rf/subscribe [:rss-selected-name])
           feeds (rf/subscribe [:rss-feeds])]
         (fn []
-
             [:div
                 ;Subreddit buttons
                 [:div {:style {:margin "0px 96px" :margin-top -26 :margin-bottom 30
@@ -164,13 +193,15 @@
                     {:color style/col-black-full :font-size 48}]])))
 
 
-(defn rss-main []
+
+(defn rss-main
+    "React component to display the whole rss page."
+    []
     (let [settingSize (r/atom 0)]
         (fn []
             [:div 
                 [utils/page-settings #(swap! settingSize utils/toggleScale)]
                 [rss-settings settingSize]
-
                 [rss-header]
                 [rss-feed]])))
 
