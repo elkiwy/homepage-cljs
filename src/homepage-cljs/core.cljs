@@ -18,18 +18,21 @@
 
 (enable-console-print!)
 
-(def navbar-width 128)
 
 ;; -----------------------------------------------------------------------------------------------------
-;; 
+;; Pages navigation
+(def navbar-width 128)
 
 ;Define a map to get the right component for the right current page keyword
 (def pages {:Favorites favs/favs-main :Reddit reddit/subreddit-main :Rss rss/rss-main :Account account/account-main})
 
-(defn navbar [cp]
-    [:div {:class (style/background)
-           :style {:position "absolute"
-                   :top 0 :left 0 :width navbar-width :height "100%" :padding-top 128} }
+
+
+(defn navbar
+    "React component to display the left sidebar containing the navigation items."
+    [cp]
+    [:div {:class (style/background) :style {:position "absolute" :top 0 :left 0
+           :width navbar-width :height "100%" :padding-top 128} }
 
         ;App version
         [ui/custom-header 4 (str "v" utils/app-version) {:position "fixed" :font-size 14
@@ -44,20 +47,28 @@
 
 
 
-(defn main-page []
-    (let [currentPage (rf/subscribe [:page-current])
-          db (rf/subscribe [:app-db])
-          anim (r/atom (rand-int 360))
-          testAtom (r/atom nil)]
+
+
+;; -----------------------------------------------------------------------------------------------------
+;; Root controller
+
+(defn main-page
+    "React component to hold all the other controllers"
+    []
+    (let [currentPage (rf/subscribe [:page-current])]
         (fn []
             [:div 
-                (let [col1 @style/col-accent1
-                      col2 @style/col-accent2
+                ;App gradient background
+                (let [col1 @style/col-accent1 col2 @style/col-accent2
                       bg-img (str "linear-gradient(to bottom right, " col1 ", " col2 ")")]
                     [:div {:class "background" :style {:background-image bg-img}}
                         [navbar currentPage]])
-                [:div {:style {:margin-top "32px" }}
+
+                ;Current page controller
+                [:div {:style {:margin-top "32px"}}
                     [(@currentPage pages)]]])))
+
+
 
 
 
