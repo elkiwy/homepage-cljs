@@ -10,14 +10,14 @@
 
 
 
-; (homepage-cljs.app-state/app-db)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Add a favorite input section 
+; --------------------------------------------------------------------------------------------------------
+; UI elements
 
 ;Main input component
-(defn favs-comp-settings [size]
+(defn favs-comp-settings
+    "React component to display the setting panel for favorites page"
+    [size]
     (let [favs (rf/subscribe [:favs])
           nameAtom (r/atom "")
           linkAtom (r/atom "")
@@ -57,26 +57,18 @@
                 [ui/custom-select-input removeFavOptionsAtom removeCateAtom]
                 [ui/custom-button "Remove Favorite" #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])]
 
-
                 ;Remove category
                 [ui/custom-header 4 "Remove a Category"]
                 [ui/custom-select-input (r/atom (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs)))) removeCategoryAtom]
-                [ui/custom-button "Remove Category" #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])]
-                ])))
+                [ui/custom-button "Remove Category" #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])]])))
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Favorites list sections
-
-;Single favorite link component
-(defn favs-comp-fav [name link]
-    (fn []
-        [:li {:style {:text-align "center" :margin-bottom 10}}
-            [:a {:class (style/text-link style/col-white 14 "400") :href link} name]]))
-
-;Single category component
-(defn favs-comp-category [catName hrefs]
+(defn favs-comp-category
+    "React component to display a category block with all its links.
+     Takes `catName` as the category name string
+     and `hrefs` as a sequence of collection of link-name and link-url."
+    [catName hrefs]
     (let [wid (r/atom 0)
           animWid (utils/animate wid 250)]
         (fn []
@@ -93,31 +85,33 @@
                                :height 2 :width (str @animWid "%")}}]
 
                 [:ul {:style {:list-style-type "none" :padding-left 0}}
-                    (for [[favName, favLink] hrefs]
-                        ^{:key favName} [favs-comp-fav (utils/deurlizeString (name favName)) favLink])]])))
+                    (for [[favName, favLink] hrefs] ^{:key favName}
+                        [:li {:style {:text-align "center" :margin-bottom 10}}
+                            [:a {:class (style/text-link style/col-white 14 "400") :href favLink}
+                                (utils/deurlizeString (name favName))]])]])))
             
-;Multiple categories generator
-(defn favs-comp-categories []
-    (let [favs (rf/subscribe [:favs])]
-        (fn []
-            [:div {:style {:display "flex" :flex-wrap "wrap" :justify-content "center"}}
-                (for [category (seq @favs)] ^{:key (first category)}
-                    [favs-comp-category (first category) (second category)])])))
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Main component
-
-;Main favorites component
-(defn favs-main []
-    (let [sizeSetting (r/atom 0)]
+(defn favs-main
+    "Root react component for the favorites page."
+    []
+    (let [sizeSetting (r/atom 0)
+          favs (rf/subscribe [:favs])]
         (fn []
             [:div 
+                ;Setting button
                 [utils/page-settings #(swap! sizeSetting utils/toggleScale)]
+
+                ;Header
                 [:h1 {:class (style/text style/col-black-full 48 "bold")
                       :style {:margin-top -10 :text-align "center"}} "Favorites"]
+
+                ;Settings panel
                 [favs-comp-settings sizeSetting]
-                [favs-comp-categories]])))
+
+                ;Favorites categories blocks
+                [:div {:style {:display "flex" :flex-wrap "wrap" :justify-content "center"}}
+                    (for [category (seq @favs)] ^{:key (first category)}
+                        [favs-comp-category (first category) (second category)])]])))
 
 
