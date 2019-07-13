@@ -19,16 +19,17 @@
 (enable-console-print!)
 
 
-(def test-info "Wed Jul 10 22:58:29 2019 +0200")
-
+;; -----------------------------------------------------------------------------------------------------
+;; Build date info pushed from project.cljs on build time
 (goog-define info  "Wed Jul 10 22:58:29 2019 +0200")
 
-
-
-(defn format-info [s]
+(defn format-info
+    "Formats the git log string."
+    [s]
     (let [ss (clojure.string/split s " ")
           s1 (clojure.string/join "_" (drop 1 (take 3 ss)))]
         (str "Build date: " s1 "_" (nth ss 4) " " (nth ss 3))))
+
 
 
 
