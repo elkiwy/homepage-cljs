@@ -106,10 +106,11 @@
 ;Style for a background color change on hover between the two accent colors
 (defstyles background-accent-hover [& [bg-col]]
     {:background-color (if (nil? bg-col) @col-accent2 bg-col)
-     :transition-property "background"
+     :transition-property "background box-shadow"
      :transition-duration "0.25s"
      :transition-timing-function "ease-in-out"
-     :&:hover {:background-color @col-accent1}})
+     :&:hover {:box-shadow (str "0px 0px 1px 1px " col-black-full)
+               :background-color @col-accent1}})
 
 
 
