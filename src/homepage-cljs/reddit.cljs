@@ -63,9 +63,26 @@
 (defn subreddit-post-link [post-data]
     (fn []
         [:a {:style {:text-decoration "none"} :href (:url post-data) :target "_blank"} 
-            [:div {:class [(style/text-link style/col-white 14 "400") (style/background)]
-                   :style {:padding 14 :margin "16px 48px"}}
-                 (:title post-data)]]))
+
+            [:div {:class [(style/text-link style/col-white 16 "400") (style/background)]
+                   :style {:padding 12 :margin "16px 48px"}}
+                [:p {:style {:margin-top 4}}
+                    (:title post-data)]
+
+                (let [big 16
+                      small 10]
+                    [:div {:style {:margin-top -16}}
+                    [:span {:style {:font-size small :font-weight "400"}} (str "Up:")]
+                    [:span {:style {:font-size big :font-weight "800"}} (str (:ups post-data))]
+                    [:span {:style {:font-size small :font-weight "400"}} (str " Down:")]
+                    [:span {:style {:font-size big :font-weight "800"}} (str (:downs post-data))]])
+
+
+                ;[:p (str (keys post-data))]
+
+                ]
+
+            ]))
 
 
 
