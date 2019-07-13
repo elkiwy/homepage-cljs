@@ -122,28 +122,22 @@
           feeds (rf/subscribe [:rss-feeds])
           remFeedNameAtom (r/atom "")]
         (fn []
-            [:div {:class "settings" :style {:transform (str "scale(" @size ")")}}
+            [:div {:class (style/setting-window)
+                   :style {:width 480 :padding-top 16 :left (str "calc(100% - " (* @size 480) "px" )}}
                 ;Close button
-                [:input {:style {:float "right"} :type "button" :value "x" :on-click #(swap! size utils/toggleScale)}]
+                [ui/custom-button "Back" #(swap! size utils/toggleScale)]
 
                 ;Add feed
-                [:h4 {:style {:margin-bottom 0 }} "Add a feed"]
-                [:input {:type "text" :value @newFeedNameAtom :placeholder "name"
-                        :on-change #(reset! newFeedNameAtom (-> % .-target .-value))}]
-                [:input {:type "text" :value @newFeedUrlAtom :placeholder "url"
-                        :on-change #(reset! newFeedUrlAtom (-> % .-target .-value))}]
-                [:input {:type "button" :value "Add"
-                                        :on-click #(rf/dispatch [:rss-added @newFeedNameAtom @newFeedUrlAtom])}]
+                [ui/custom-header 4 "Add a feed"]
+                [ui/custom-text-input "Name" newFeedNameAtom]
+                [ui/custom-text-input "url" newFeedUrlAtom]
+                [ui/custom-button "Add" #(rf/dispatch [:rss-added @newFeedNameAtom @newFeedUrlAtom])]
 
                 ;Remove feed
-                [:h4 {:style {:margin-bottom 0 }} "Remove a feed"]
-
-                [:select {:on-change #(reset! remFeedNameAtom (-> % .-target .-value))} :defaultValue ""
-                    [:option  ""]
-                    (for [feed (seq @feeds)]
-                        ^{:key (first feed)} [:option (first feed)])]
-
-                [:input {:type "button" :value "Remove" :on-click #(rf/dispatch [:rss-removed @remFeedNameAtom])}]])))
+                [ui/custom-header 4 "Remove a feed"]
+                [ui/custom-select-input (r/atom (map first (seq @feeds))) remFeedNameAtom]
+                [ui/custom-button "Remove" #(rf/dispatch [:subreddit-removed @remFeedNameAtom])]
+                ])))
 
 
 
