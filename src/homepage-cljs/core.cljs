@@ -21,7 +21,7 @@
 
 ;; -----------------------------------------------------------------------------------------------------
 ;; Build date info pushed from project.cljs on build time
-(goog-define info  "Wed Jul 10 22:58:29 2019 +0200")
+(goog-define info  "Mon Gen 01 00:00:00 2019 +0200")
 
 (defn format-info
     "Formats the git log string."
