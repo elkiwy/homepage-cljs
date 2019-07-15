@@ -47,6 +47,15 @@
 (rf/reg-sub :favs
     (fn [db _] (:favs db)))
 
+(rf/reg-sub :favs-categories
+    :<- [:favs]
+    (fn [[favs] _]
+        (if (empty? favs)
+            []
+            (vec (map #(utils/deurlizeString (name (first %))) (seq favs))))))
+
+
+
 
 ;reddit
 (rf/reg-sub :reddit-subreddits ;A vector of strings
