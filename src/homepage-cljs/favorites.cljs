@@ -19,6 +19,7 @@
     "React component to display the setting panel for favorites page"
     [size]
     (let [favs (rf/subscribe [:favs])
+          categories (rf/subscribe [:favs-categories])
           nameAtom (r/atom "")
           linkAtom (r/atom "")
           cateAtom (r/atom (if (empty? @favs) "" (str (key (first @favs)))))
@@ -46,15 +47,15 @@
                 [ui/custom-header 4 "Add a favorite"]
                 [ui/custom-text-input "Name" nameAtom]
                 [ui/custom-text-input "URL" linkAtom]
-                [ui/custom-select-input (r/atom (map #(utils/deurlizeString (name (first %))) (seq @favs))) cateAtom]
+                [ui/custom-select-input categories cateAtom]
                 [ui/custom-button "Add Favorite" #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])]
 
                 ;Remove fav
                 [ui/custom-header 4 "Remove a favorite"]
-                [ui/custom-select-input (r/atom (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs)))) removeCateAtom
+                [ui/custom-select-input categories removeCateAtom
                     (fn [] (reset! removeFavOptionsAtom (map #(utils/deurlizeString (name (first %)))
                                                        (seq (get @favs (keyword (utils/urlizeString @removeCateAtom)))))))]
-                [ui/custom-select-input removeFavOptionsAtom removeCateAtom]
+                ;[ui/custom-select-input removeFavOptionsAtom removeCateAtom]
                 [ui/custom-button "Remove Favorite" #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])]
 
                 ;Remove category
