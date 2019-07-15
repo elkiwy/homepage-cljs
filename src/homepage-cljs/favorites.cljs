@@ -85,10 +85,10 @@
                                :height 2 :width (str @animWid "%")}}]
 
                 [:ul {:style {:list-style-type "none" :padding-left 0}}
-                    (for [[favName, favLink] hrefs] ^{:key favName}
+                    (doall (for [[favName, favLink] hrefs] ^{:key favName}
                         [:li {:style {:text-align "center" :margin-bottom 10}}
                             [:a {:class (style/text-link style/col-white 14 "400") :href favLink}
-                                (utils/deurlizeString (name favName))]])]])))
+                                (utils/deurlizeString (name favName))]]))]])))
             
 
 
