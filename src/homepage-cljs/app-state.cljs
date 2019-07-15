@@ -47,12 +47,17 @@
 (rf/reg-sub :favs
     (fn [db _] (:favs db)))
 
+(rf/reg-sub :favs-category
+    (fn [db [_ category]]
+        (get-in db [:favs category] [])))
+
 (rf/reg-sub :favs-categories
     (fn [db _]
-        (if (empty? (:favs db))
-            []
-            (vec (map #(utils/deurlizeString (name (first %))) (seq (:favs db)))))))
+        (vec (map #(utils/deurlizeString (name (first %))) (seq (:favs db))))))
 
+(rf/reg-sub :favs-categories-keys
+    (fn [db _]
+        (vec (map first (seq (:favs db))))))
 
 
 
@@ -156,15 +161,22 @@
 
 (rf/reg-event-db :favorite-category-removed
     (fn [db [_ category]]
-        (update-db-and-save true #(utils/dissoc-in db [:favs] (utils/urlizeString category)))))
+        (let [cat (keyword (utils/urlizeString category))]
+            (update-db-and-save true #(utils/dissoc-in db [:favs] cat)))))
 
 (rf/reg-event-db :favorite-link-added
     (fn [db [_ category name link]]
-        (update-db-and-save true #(assoc-in db [:favs (keyword (utils/urlizeString category)) (utils/urlizeString name)] (utils/urlizeString link)))))
+        (when-not (and (empty? category) (empty? name) (empty? link))
+            (let [cat (keyword (utils/urlizeString category))
+                  nam (utils/urlizeString name)
+                  lnk (utils/urlizeString link)]
+                (update-db-and-save true #(assoc-in db [:favs cat nam] lnk))))))
     
 (rf/reg-event-db :favorite-link-removed
     (fn [db [_ category name]]
-        (update-db-and-save true #(utils/dissoc-in db [:favs (utils/urlizeString category)] (utils/urlizeString name)))))
+        (let [cat (keyword (utils/urlizeString category))
+              nam (utils/urlizeString name)]
+            (update-db-and-save true #(utils/dissoc-in db [:favs cat] nam)))))
 
 
 
