@@ -11,17 +11,18 @@
 (defn app-db []
     @rfdb/app-db)
 
+(def one-month (* 60 60 24 30))
 
 (defn save-state
     ([]
         (save-state @rfdb/app-db))
     ([data]
         (when (not (nil? (:page-current data)))
-            (ru/set! :reddit       (pr-str (:reddit data)))
-            (ru/set! :favs         (pr-str (:favs data)))
-            (ru/set! :account      (pr-str (:account data)))
-            (ru/set! :rss          (pr-str (:rss data)))
-            (ru/set! :page-current (pr-str (:page-current data))))))
+            (ru/set! :reddit       (pr-str (:reddit data)) {:max-age one-month})
+            (ru/set! :favs         (pr-str (:favs data)) {:max-age one-month})
+            (ru/set! :account      (pr-str (:account data)) {:max-age one-month})
+            (ru/set! :rss          (pr-str (:rss data)) {:max-age one-month})
+            (ru/set! :page-current (pr-str (:page-current data)) {:max-age one-month}))))
 
 
 
