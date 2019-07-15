@@ -153,7 +153,7 @@
 ;Favorites
 (rf/reg-event-db :favorite-category-added
     (fn [db [_ category]]
-        (update-db-and-save true #(assoc-in db [:favs (utils/urlizeString category)] {}))))
+        (update-db-and-save true #(assoc-in db [:favs (keyword (utils/urlizeString category))] {}))))
 
 (rf/reg-event-db :favorite-category-removed
     (fn [db [_ category]]
@@ -161,7 +161,7 @@
 
 (rf/reg-event-db :favorite-link-added
     (fn [db [_ category name link]]
-        (update-db-and-save true #(assoc-in db [:favs (utils/urlizeString category) (utils/urlizeString name)] link))))
+        (update-db-and-save true #(assoc-in db [:favs (keyword (utils/urlizeString category)) (utils/urlizeString name)] (utils/urlizeString link)))))
     
 (rf/reg-event-db :favorite-link-removed
     (fn [db [_ category name]]
