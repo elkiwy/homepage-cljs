@@ -93,8 +93,6 @@
 ;Style for the setting window side panel
 (defstyles setting-window []
     {:background-color (str col-black-full "f0")
-     :display "flex"
-     :flex-direction "column"
      :position "fixed"
      :height "100%"
      :overflow-y "scroll"
