@@ -20,6 +20,21 @@
 
 
 ;; -----------------------------------------------------------------------------------------------------
+;; Build date info pushed from project.cljs on build time
+(goog-define info  "Wed Jul 10 22:58:29 2019 +0200")
+
+(defn format-info
+    "Formats the git log string."
+    [s]
+    (let [ss (clojure.string/split s " ")
+          s1 (clojure.string/join "_" (drop 1 (take 3 ss)))]
+        (str "Build date: " s1 "_" (nth ss 4) " " (nth ss 3))))
+
+
+
+
+
+;; -----------------------------------------------------------------------------------------------------
 ;; Pages navigation
 (def navbar-width 128)
 
@@ -35,8 +50,8 @@
            :width navbar-width :height "100%" :padding-top 128} }
 
         ;App version
-        [ui/custom-header 4 (str "v" utils/app-version) {:position "fixed" :font-size 14
-                                                         :bottom 0 :left 16 :color style/col-white}]
+        [ui/custom-header 4 (format-info info) {:position "fixed" :font-size 14
+                                                :bottom 0 :left 0 :width navbar-width :color style/col-white}]
 
         ;Navbar items
         (doall (for [page pages] ^{:key (name (first page))}
