@@ -48,11 +48,10 @@
     (fn [db _] (:favs db)))
 
 (rf/reg-sub :favs-categories
-    :<- [:favs]
-    (fn [[favs] _]
-        (if (empty? favs)
+    (fn [db _]
+        (if (empty? (:favs db))
             []
-            (vec (map #(utils/deurlizeString (name (first %))) (seq favs))))))
+            (vec (map #(utils/deurlizeString (name (first %))) (seq (:favs db)))))))
 
 
 
