@@ -21,7 +21,7 @@
 
 ;; -----------------------------------------------------------------------------------------------------
 ;; Build date info pushed from project.cljs on build time
-(goog-define info  "Wed Jul 10 22:58:29 2019 +0200")
+(goog-define info  "Mon Gen 01 00:00:00 2019 +0200")
 
 (defn format-info
     "Formats the git log string."
@@ -67,10 +67,14 @@
 ;; -----------------------------------------------------------------------------------------------------
 ;; Root controller
 
+(def sync-icon-alpha (r/atom 0))
+
+
 (defn main-page
     "React component to hold all the other controllers"
     []
-    (let [currentPage (rf/subscribe [:page-current])]
+    (let [currentPage (rf/subscribe [:page-current])
+          sync-icon-alpha-anim (utils/animate sync-icon-alpha 250)]
         (fn []
             [:div 
                 ;App gradient background
@@ -78,6 +82,11 @@
                       bg-img (str "linear-gradient(to bottom right, " col1 ", " col2 ")")]
                     [:div {:class "background" :style {:background-image bg-img}}
                         [navbar currentPage]])
+
+
+                [:p {:style {:opacity @sync-icon-alpha-anim :position "absolute" :top -20 :left navbar-width
+                             :font-size 18}}
+                    "Synching..."]
 
                 ;Current page controller
                 [:div {:style {:margin-top "32px"}}

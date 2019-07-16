@@ -15,10 +15,11 @@
                             :font-size 14 :font-family "myFont"
                             :height (+ item-h (* item-padding 2))
                             :width (str "calc(" item-relative-w "% + " (* item-padding 2) "px)")  
-                            :margin (str item-v-margin "px auto")
+                            :margin (str item-v-margin "px " (/ (- 100 item-relative-w) 2) "%" )
                             :color style/col-dark-gray}
-                    :on-change #(do (reset! dataAtom (-> % .-target .-value)) (when-not (nil? extraFunc) (extraFunc)))}
-           :defaultValue @dataAtom
+                    :on-change #(do (reset! dataAtom (-> % .-target .-value))
+                                    (when-not (nil? extraFunc) (extraFunc)))}
+                    :defaultValue @dataAtom
             (for [item @itemsAtom] ^{:key item} [:option item])]))
 
 
@@ -32,7 +33,7 @@
                            :font-size 14 :font-family "myFont"
                            :height item-h
                            :width (str item-relative-w "%")
-                           :margin (str item-v-margin "px auto")
+                           :margin (str item-v-margin "px " (/ (- 100 item-relative-w) 2) "%" )
                            :color style/col-dark-gray}}]))
 
 
@@ -45,7 +46,8 @@
                    :style (merge {:text-decoration "none"
                            :border-radius 5 :border-width 0 :color style/col-black-full
                            :font-family "myFont" :font-size 16 :font-weight "800"
-                           :height (* item-h 2) :margin (str item-v-margin "px auto")
+                           :height (* item-h 2)
+                           :margin (str item-v-margin "px " (/ (- 100 item-relative-w) 2) "%" )
                            :width (str "calc(" item-relative-w "% + " (* item-padding 2) "px)")  
                            :padding item-padding} extraStyle)}]))
 

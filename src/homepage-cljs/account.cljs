@@ -79,12 +79,14 @@
      Takes a `usr` and `psw` as strings, a `logAtom` as an optional atom to log the response,
      and a `targetDb` as optional app-data to send to the cloud instead of the current loaded one."
     [usr psw logAtom targetDb]
+    (reset! homepage-cljs.core/sync-icon-alpha 1)
     (let [fullConfig (if (nil? targetDb) @rfdb/app-db targetDb)
           slimConfig (update fullConfig :subreddits utils/discard-json)
           base64     (b64/encodeString (str slimConfig))]
         (backend-post-request addUserConfig-endpoint {:user usr} {:password psw :config base64}
             (fn [responseBody]
                 (println "Updated config " (count base64))
+                (reset! homepage-cljs.core/sync-icon-alpha 0)
                 (when (not (nil? logAtom))
                     (if (= (:code responseBody) 200)
                         (reset! logAtom (str "Config uploaded successfully with code " (:code responseBody)))

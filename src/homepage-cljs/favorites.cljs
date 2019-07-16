@@ -14,23 +14,35 @@
 ; --------------------------------------------------------------------------------------------------------
 ; UI elements
 
+(defn get-favs [category]
+    (when-not (empty? category)
+        (let [cat (keyword (utils/urlizeString category))]
+            (map #(utils/deurlizeString (name (first %)))
+                (seq (get-in @(rf/subscribe [:favs]) [cat]))))))
+
+
 ;Main input component
 (defn favs-comp-settings
     "React component to display the setting panel for favorites page"
     [size]
     (let [favs (rf/subscribe [:favs])
+          categories (rf/subscribe [:favs-categories])
+
+          nameCatAtom (r/atom "")
+
           nameAtom (r/atom "")
           linkAtom (r/atom "")
-          cateAtom (r/atom (if (empty? @favs) "" (str (key (first @favs)))))
-          removeCateAtom (r/atom "")
-          removeFavAtom  (r/atom "")
-          removeFavOptionsAtom (r/atom [])
-          nameCatAtom (r/atom "")
+          cateAtom (r/atom (first @categories))
+
+          removeCateAtom (r/atom (first @categories))
+          removeFavAtom  (r/atom (first (get-favs @removeCateAtom)))
+          removeFavOptionsAtom (r/atom (get-favs @removeCateAtom))
+
           removeCategoryAtom (r/atom "")]
         (fn []
             ;Fix cateAtom not getting updated on fresh app start since favs was still empty
-            (when (empty? (clojure.string/trim @cateAtom))
-                (reset! cateAtom (if (empty? @favs) "" (key (first @favs)))))
+            (when (empty? @cateAtom)
+                (reset! cateAtom (first @categories)))
 
             [:div {:class (style/setting-window)
                    :style {:width 480 :padding-top 16 :left (str "calc(100% - " (* @size 480) "px" )}}
@@ -40,36 +52,39 @@
                 ;Category
                 [ui/custom-header 4 "Add a category"]
                 [ui/custom-text-input "Name" nameCatAtom]
-                [ui/custom-button "Add Category" #(rf/dispatch [:favorite-category-added @nameCatAtom])]
+                [ui/custom-button "Add Category" (fn [] (rf/dispatch [:favorite-category-added @nameCatAtom]))]
 
                 ;Favorite
                 [ui/custom-header 4 "Add a favorite"]
                 [ui/custom-text-input "Name" nameAtom]
                 [ui/custom-text-input "URL" linkAtom]
-                [ui/custom-select-input (r/atom (map #(utils/deurlizeString (name (first %))) (seq @favs))) cateAtom]
-                [ui/custom-button "Add Favorite" #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])]
+                [ui/custom-select-input categories cateAtom]
+                [ui/custom-button "Add Favorite"
+                    #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])]
 
                 ;Remove fav
                 [ui/custom-header 4 "Remove a favorite"]
-                [ui/custom-select-input (r/atom (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs)))) removeCateAtom
-                    (fn [] (reset! removeFavOptionsAtom (map #(utils/deurlizeString (name (first %)))
-                                                       (seq (get @favs (keyword (utils/urlizeString @removeCateAtom)))))))]
-                [ui/custom-select-input removeFavOptionsAtom removeCateAtom]
-                [ui/custom-button "Remove Favorite" #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])]
+                [ui/custom-select-input categories removeCateAtom
+                    (fn [] (reset! removeFavOptionsAtom (get-favs @removeCateAtom)))]
+                [ui/custom-select-input removeFavOptionsAtom removeFavAtom]
+                [ui/custom-button "Remove Favorite"
+                    #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])]
 
                 ;Remove category
                 [ui/custom-header 4 "Remove a Category"]
-                [ui/custom-select-input (r/atom (concat [""] (map #(utils/deurlizeString (name (first %))) (seq @favs)))) removeCategoryAtom]
-                [ui/custom-button "Remove Category" #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])]])))
+                [ui/custom-select-input categories removeCategoryAtom]
+                [ui/custom-button "Remove Category"
+                    #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])]])))
+
 
 
 
 (defn favs-comp-category
     "React component to display a category block with all its links.
-     Takes `catName` as the category name string
-     and `hrefs` as a sequence of collection of link-name and link-url."
-    [catName hrefs]
+     Takes `catName` as the category name string."
+    [catName]
     (let [wid (r/atom 0)
+          links (rf/subscribe [:favs-category catName])
           animWid (utils/animate wid 250)]
         (fn []
             [:div {:class (homepage-cljs.style/background)
@@ -85,10 +100,10 @@
                                :height 2 :width (str @animWid "%")}}]
 
                 [:ul {:style {:list-style-type "none" :padding-left 0}}
-                    (for [[favName, favLink] hrefs] ^{:key favName}
+                    (doall (for [[favName, favLink] @links] ^{:key favName}
                         [:li {:style {:text-align "center" :margin-bottom 10}}
                             [:a {:class (style/text-link style/col-white 14 "400") :href favLink}
-                                (utils/deurlizeString (name favName))]])]])))
+                                (utils/deurlizeString (name favName))]]))]])))
             
 
 
@@ -96,7 +111,7 @@
     "Root react component for the favorites page."
     []
     (let [sizeSetting (r/atom 0)
-          favs (rf/subscribe [:favs])]
+          categories (rf/subscribe [:favs-categories-keys])]
         (fn []
             [:div 
                 ;Setting button
@@ -111,7 +126,7 @@
 
                 ;Favorites categories blocks
                 [:div {:style {:display "flex" :flex-wrap "wrap" :justify-content "center"}}
-                    (for [category (seq @favs)] ^{:key (first category)}
-                        [favs-comp-category (first category) (second category)])]])))
+                    (for [category @categories] ^{:key category}
+                        [favs-comp-category category])]])))
 
 

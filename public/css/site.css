@@ -239,10 +239,11 @@ input[type="button"]{
 	margin-bottom: 20px;}
 
 
+/*
 .settings input, select{
 	-webkit-appearance: none; 
 	-moz-appearance: none;
-	appearance: none;       /* remove default arrow */
+	appearance: none;       
 	height: 22px;
 	padding: 4px 10px;
 	margin-left: 3px;
@@ -253,11 +254,11 @@ input[type="button"]{
 	border: none;
 	border-radius: calc(var(--border-radius) / 2);
 	color: var(--col-white);
-}
+}*/
 
-.settings input[type="button"]{
+/*.settings input[type="button"]{
 	background-color: var(--fg2-color);
-}
+}*/
 
 .settings select{
 	background: var(--fg2-color);
