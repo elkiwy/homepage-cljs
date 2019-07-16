@@ -81,14 +81,20 @@
 
 
 (defn urlizeString [s]
-    (clojure.string/replace s " " "%20"))
+    (if (nil? s) nil (clojure.string/replace s " " "%20")))
 
 (defn deurlizeString [s]
-    (clojure.string/replace s "%20" " "))
+    (if (nil? s) nil (clojure.string/replace s "%20" " ")))
 
 
 
 
+
+
+
+
+(defn index [v pred]
+    (ffirst (filter #(pred (second %)) (map-indexed vector v))))
 
 
 
