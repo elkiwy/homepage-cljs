@@ -14,11 +14,19 @@
 ; --------------------------------------------------------------------------------------------------------
 ; UI elements
 
+;(defn get-favs [category]
+    ;(when-not (empty? category)
+        ;(let [cat (keyword (utils/urlizeString category))]
+            ;(map #(utils/deurlizeString (name (first %)))
+                ;(seq (get-in @(rf/subscribe [:favorites]) [cat]))))))
+
 (defn get-favs [category]
-    (when-not (empty? category)
-        (let [cat (keyword (utils/urlizeString category))]
-            (map #(utils/deurlizeString (name (first %)))
-                (seq (get-in @(rf/subscribe [:favs]) [cat]))))))
+    (map #(utils/deurlizeString (:name %))
+        @(rf/subscribe [:favorites2-category-links (utils/urlizeString category)])))
+                  
+
+    ;(rf/subscribe [:favorites2-category-links "Social"])
+    ;(:favorites @re-frame.db/app-db)
 
 
 ;Main input component
@@ -37,7 +45,7 @@
           removeFavAtom  (r/atom (first (get-favs @removeCateAtom)))
           removeFavOptionsAtom (r/atom (get-favs @removeCateAtom))
 
-          removeCategoryAtom (r/atom "")]
+          removeCategoryAtom (r/atom (first @categories))]
         (fn []
             ;Fix cateAtom not getting updated on fresh app start since favs was still empty
             (when (empty? @cateAtom)
@@ -51,7 +59,7 @@
                 ;Category
                 [ui/custom-header 4 "Add a category"]
                 [ui/custom-text-input "Name" nameCatAtom]
-                [ui/custom-button "Add Category" (fn [] (rf/dispatch [:favorite-category-added @nameCatAtom]))]
+                [ui/custom-button "Add Category" (fn [] (rf/dispatch [:favorite2-category-added @nameCatAtom]))]
 
                 ;Favorite
                 [ui/custom-header 4 "Add a favorite"]
@@ -59,7 +67,7 @@
                 [ui/custom-text-input "URL" linkAtom]
                 [ui/custom-select-input categories cateAtom]
                 [ui/custom-button "Add Favorite"
-                    #(rf/dispatch [:favorite-link-added @cateAtom @nameAtom @linkAtom])]
+                    #(rf/dispatch [:favorite2-link-added @cateAtom @nameAtom @linkAtom])]
 
                 ;Remove fav
                 [ui/custom-header 4 "Remove a favorite"]
@@ -73,7 +81,7 @@
                 [ui/custom-header 4 "Remove a Category"]
                 [ui/custom-select-input categories removeCategoryAtom]
                 [ui/custom-button "Remove Category"
-                    #(rf/dispatch [:favorite-category-removed @removeCategoryAtom])]])))
+                    #(rf/dispatch [:favorite2-category-removed @removeCategoryAtom])]])))
 
 
 
@@ -99,11 +107,10 @@
                                :height 2 :width (str @animWid "%")}}]
 
                 [:ul {:style {:list-style-type "none" :padding-left 0}}
-                    (doall (for [[favName, favLink] @links] ^{:key favName}
+                    (doall (for [linkObj @links] ^{:key (:name linkObj)}
                         [:li {:style {:text-align "center" :margin-bottom 10}}
-                            [:a {:class (style/text-link style/col-white 14 "400") :href favLink}
-                                (utils/deurlizeString (name favName))]]))]
-                ])))
+                            [:a {:class (style/text-link style/col-white 14 "400") :href (:link linkObj)}
+                                (utils/deurlizeString (:name linkObj))]]))]])))
             
 
 
@@ -114,8 +121,6 @@
           categories (rf/subscribe [:favorites2-categories])]
         (fn []
             [:div 
-
-                (println "CATEGORIES: " @categories)
 
                 ;Setting button
                 [utils/page-settings #(swap! sizeSetting utils/toggleScale)]

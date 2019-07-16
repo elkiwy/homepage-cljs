@@ -72,7 +72,9 @@
 
 (rf/reg-sub :favorites2-category-links
     (fn [db [_ name]]
-        (first (filter #(= (:name %) (utils/urlizeString name)) (get-in db [:favorites :categories])))))
+        (let [categories (get-in db [:favorites :categories])
+              category (first (filter #(= (:name %) (utils/urlizeString name)) categories))]
+            (:links category))))
 
 
 
@@ -245,19 +247,50 @@
 (rf/reg-event-db :favorite2-category-added
     (fn [db [_ name]]
         (let [nam (utils/urlizeString name)
-              ind (count (get-in db [:favorites :categories]))]
-            (update-in db [:favorites :categories] concat [{:name nam :order (inc ind) :links []}]))))
+              categories (get-in db [:favorites :categories])
+              ind (count categories)
+              newCategories (conj categories {:name nam :order (inc ind) :links []})]
+            (update-db-and-save true
+                #(assoc-in db [:favorites :categories] (vec newCategories))))))
 
 
-(rf/dispatch [:favorite2-category-added "Social"])
+;(rf/dispatch [:favorite2-category-added "Social"])
 
 (:favorites @re-frame.db/app-db)
 
-;ADD LINK
-;(update-in db [:favorites :categories NTH :links] concat [{:name NAME :link LINK}])
 
-;REMOVE CATE
-;(dissoc-in db [:favorites :categories] NTH)
+
+;ADD LINK
+(rf/reg-event-db :favorite2-link-added
+    (fn [db [_ category name link]]
+        (let [nam  (utils/urlizeString name)
+              cate (utils/urlizeString category)
+              lnk  (utils/urlizeString link)
+              categories (get-in db [:favorites :categories])
+              cateIndex (utils/index categories #(= (:name %) category))]
+            (update-db-and-save true
+                #(update-in db [:favorites :categories cateIndex :links] conj {:name nam :link lnk})))))
+
+
+;(:favorites @re-frame.db/app-db)
+;(rf/dispatch-sync [:favorite2-link-added "Social" "a" "alnk"])
+
+
+
+
+(rf/reg-event-db :favorite2-category-removed
+    (fn [db [_ name]]
+        (let [nam (utils/urlizeString name)
+              categories (get-in db [:favorites :categories])
+              newCategories (remove #(= nam (utils/urlizeString (:name %))) categories)]
+            (update-db-and-save true
+                #(assoc-in db [:favorites :categories] (vec newCategories))))))
+
+
+;(update-in {:cose [1 2]} [:cose] conj 3)
+
+
+
 
 ;REMOVE LINK
 ;(dissoc-in db [:favorites :categories NTH :links] NTH2)
