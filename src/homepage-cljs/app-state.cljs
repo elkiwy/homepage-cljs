@@ -19,7 +19,7 @@
     ([data]
         (when (not (nil? (:page-current data)))
             (ru/set! :reddit       (pr-str (:reddit data)) {:max-age one-month})
-            (ru/set! :favs         (pr-str (:favs data)) {:max-age one-month})
+            (ru/set! :favorites    (pr-str (:favorites data)) {:max-age one-month})
             (ru/set! :account      (pr-str (:account data)) {:max-age one-month})
             (ru/set! :rss          (pr-str (:rss data)) {:max-age one-month})
             (ru/set! :page-current (pr-str (:page-current data)) {:max-age one-month}))))
@@ -45,20 +45,35 @@
 
 
 ;favs
-(rf/reg-sub :favs
-    (fn [db _] (:favs db)))
+(rf/reg-sub :favorites 
+    (fn [db _] (:favorites db)))
 
-(rf/reg-sub :favs-category
+(rf/reg-sub :favorites-category
     (fn [db [_ category]]
         (get-in db [:favs category] [])))
 
-(rf/reg-sub :favs-categories
+(rf/reg-sub :favorites-categories
     (fn [db _]
-        (vec (map #(utils/deurlizeString (name (first %))) (seq (:favs db))))))
+        (vec (map #(utils/deurlizeString (name (first %))) (seq (:favorites db))))))
 
-(rf/reg-sub :favs-categories-keys
+(rf/reg-sub :favorites-categories-keys
     (fn [db _]
         (vec (map first (seq (:favs db))))))
+
+
+
+(rf/reg-sub :favorites2-categories
+    (fn [db _]
+        (map #(utils/deurlizeString (:name %)) (get-in db [:favorites :categories]))))
+
+;(rf/subscribe [:favorites2-categories])
+;(:favorites @re-frame.db/app-db)
+;(rf/dispatch-sync [:favorite2-category-added "Social"])
+
+(rf/reg-sub :favorites2-category-links
+    (fn [db [_ name]]
+        (first (filter #(= (:name %) (utils/urlizeString name)) (get-in db [:favorites :categories])))))
+
 
 
 
@@ -107,6 +122,22 @@
 
 
 
+
+
+
+(comment
+    (homepage-cljs.account/updateConfig (assoc @re-frame.db/app-db :favorites {:categories []}))
+
+    (dissoc-and-update [] :favs true)
+
+    (get @re-frame.db/app-db :favs)
+    (get @re-frame.db/app-db :favorites)
+
+    (update-db-and-save true #(assoc @re-frame.db/app-db :favorites {:categories []}))
+
+)
+
+
 (defn update-db-and-save [sync fn]
     (let [result (fn)]
         (save-state result)
@@ -114,19 +145,70 @@
             (homepage-cljs.account/updateConfig result))
         result))
 
+;(rf/subscribe [:favs])
+
+
+
+
+
+;ADD CATE
+;(update-in db [:favorites :categories] concat [{:name NAME :order ORDER :links []}])
+
+;ADD LINK
+;(update-in db [:favorites :categories NTH :links] concat [{:name NAME :link LINK}])
+
+;REMOVE CATE
+;(dissoc-in db [:favorites :categories] NTH)
+
+;REMOVE LINK
+;(dissoc-in db [:favorites :categories NTH :links] NTH2)
+
+;GET CATEGORIES
+;(map #(utils/deurlizeString (:name %)) (get-in db [:favorites :catergories]))
+
+;GET CATEGORY WITH NAME
+;(first (filter #(= (:name %) (utils/urlizeString NAME)) (get-in db [:favorites :categories])))
+
+      
+
+; ------------------------------------------------------------
+; FAVORITES
+
+;SCHEMA:
+;   :favorites    -> {:categories [*categories*]}
+;   *category*    -> {:name "Relax" :order 1 :links [*links*]}
+;   *link*        -> {:name "Facebook" :link "www.facebook.com"}
+
+;EXAMPLE:
+;   {:categories [{:name "Social" :order 1 :links [{:name "Facebook" :link "..."} {:name "Linkedin" :link "..."}]} {:name "Relax" :order 2 :links [{:name "Youtube"  :link "..."}]}]}
+
+
+
+
+; ------------------------------------------------------------
+; REDDIT
+
+;EXAMPLE:
+;   {:selected "clojure" :subreddits ["clojure" "emacs"]}
+
+
+
+
+; ------------------------------------------------------------
+; RSS
+
+;EXAMPLE:
+;   {:selected "Gamasutra" :feeds {"Gamasutra" "..." "TomsHardware" "..."} }
+
+
 
 
 (rf/reg-event-db :initialize 
     (fn [_ _] {:page-current :Favorites
               :account {:name "" :pass "" :sync false}
               :reddit {:selected "" :subreddits []}
-              :favs {}
-              :rss {:selected "" :feeds {}}
-
-              ;:rss-feeds [] ;Vector of Name-Link pairs
-              ;:rss-selected "" ;String
-              ;:rss-data {} ;String - Data map
-})) 
+              :favorites {:categories []}
+              :rss {:selected "" :feeds {}}})) 
 
 (rf/reg-event-db :replace-db
     (fn [db [_ new-db full-replace?]]
@@ -138,8 +220,8 @@
 
 ;Navigation
 (rf/reg-event-db :page-changed
-    (fn [db [_ newPage]] (update-db-and-save false #(assoc db :page-current newPage))))
-
+    (fn [db [_ newPage]]
+        (update-db-and-save false #(assoc db :page-current newPage))))
 
 ;Reddit
 (rf/reg-event-db :reddit-selected-changed
@@ -153,6 +235,35 @@
 (rf/reg-event-db :reddit-removed-subreddit
     (fn [db [_ sub]]
         (update-db-and-save true #(update-in db [:reddit :subreddits] utils/remove-from-vector sub))))
+
+
+
+
+
+
+;ADD CATE
+(rf/reg-event-db :favorite2-category-added
+    (fn [db [_ name]]
+        (let [nam (utils/urlizeString name)
+              ind (count (get-in db [:favorites :categories]))]
+            (update-in db [:favorites :categories] concat [{:name nam :order (inc ind) :links []}]))))
+
+
+(rf/dispatch [:favorite2-category-added "Social"])
+
+(:favorites @re-frame.db/app-db)
+
+;ADD LINK
+;(update-in db [:favorites :categories NTH :links] concat [{:name NAME :link LINK}])
+
+;REMOVE CATE
+;(dissoc-in db [:favorites :categories] NTH)
+
+;REMOVE LINK
+;(dissoc-in db [:favorites :categories NTH :links] NTH2)
+
+
+
 
 
 ;Favorites
@@ -172,7 +283,7 @@
                   nam (utils/urlizeString name)
                   lnk (utils/urlizeString link)]
                 (update-db-and-save true #(assoc-in db [:favs cat nam] lnk))))))
-    
+
 (rf/reg-event-db :favorite-link-removed
     (fn [db [_ category name]]
         (let [cat (keyword (utils/urlizeString category))
@@ -213,21 +324,18 @@
 ;; Save and loading
 
 
-; favorites -> {:Social {:Facebook "..." :Instagram "..."} :Relax {:Youtube "..."}}
-; reddis -> {:selected "clojure" :subreddits ["clojure" "emacs"]}
-; rss -> {:selected "Gamasutra" :feeds {"Gamasutra" "..." "TomsHardware" "..."} }
 
 (defn load-state []
     (if (nil? (reader/read-string (ru/get :page-current)))
         (rf/dispatch-sync [:initialize])
-        (let [reddit              (reader/read-string (ru/get :reddit "{:selected \"\" :subreddits []}"))
-              page-current        (reader/read-string (ru/get :page-current ":Favorites"))
-              favs                (reader/read-string (ru/get :favs "{}"))
-              account             (reader/read-string (ru/get :account "{:name \"\" :pass \"\" :sync false}"))
-              rss                 (reader/read-string (ru/get :rss "{:selected \"\" :feeds {}}"))]
+        (let [reddit       (reader/read-string (ru/get :reddit "{:selected \"\" :subreddits []}"))
+              page-current (reader/read-string (ru/get :page-current ":Favorites"))
+              favorites    (reader/read-string (ru/get :favorites "{:categories []}"))
+              account      (reader/read-string (ru/get :account "{:name \"\" :pass \"\" :sync false}"))
+              rss          (reader/read-string (ru/get :rss "{:selected \"\" :feeds {}}"))]
             (rf/dispatch-sync [:replace-db {:page-current page-current
                                             :reddit reddit
-                                            :favs favs
+                                            :favorites favorites
                                             :account account
                                             :rss rss}
                                             true]))))

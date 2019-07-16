@@ -25,8 +25,7 @@
 (defn favs-comp-settings
     "React component to display the setting panel for favorites page"
     [size]
-    (let [favs (rf/subscribe [:favs])
-          categories (rf/subscribe [:favs-categories])
+    (let [categories (rf/subscribe [:favorites2-categories])
 
           nameCatAtom (r/atom "")
 
@@ -84,7 +83,7 @@
      Takes `catName` as the category name string."
     [catName]
     (let [wid (r/atom 0)
-          links (rf/subscribe [:favs-category catName])
+          links (rf/subscribe [:favorites2-category-links catName])
           animWid (utils/animate wid 250)]
         (fn []
             [:div {:class (homepage-cljs.style/background)
@@ -103,7 +102,8 @@
                     (doall (for [[favName, favLink] @links] ^{:key favName}
                         [:li {:style {:text-align "center" :margin-bottom 10}}
                             [:a {:class (style/text-link style/col-white 14 "400") :href favLink}
-                                (utils/deurlizeString (name favName))]]))]])))
+                                (utils/deurlizeString (name favName))]]))]
+                ])))
             
 
 
@@ -111,9 +111,12 @@
     "Root react component for the favorites page."
     []
     (let [sizeSetting (r/atom 0)
-          categories (rf/subscribe [:favs-categories-keys])]
+          categories (rf/subscribe [:favorites2-categories])]
         (fn []
             [:div 
+
+                (println "CATEGORIES: " @categories)
+
                 ;Setting button
                 [utils/page-settings #(swap! sizeSetting utils/toggleScale)]
 
@@ -127,6 +130,8 @@
                 ;Favorites categories blocks
                 [:div {:style {:display "flex" :flex-wrap "wrap" :justify-content "center"}}
                     (for [category @categories] ^{:key category}
-                        [favs-comp-category category])]])))
+                        [favs-comp-category category])]
+
+                ])))
 
 
