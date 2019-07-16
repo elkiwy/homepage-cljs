@@ -113,12 +113,12 @@
                 ;Add subreddit
                 [ui/custom-header 4 "Add a subreddit"]
                 [ui/custom-text-input "Subreddit Name" newSubNameAtom]
-                [ui/custom-button "Add" #(rf/dispatch [:subreddit-added @newSubNameAtom])]
+                [ui/custom-button "Add" #(rf/dispatch [:reddit-added-subreddit @newSubNameAtom])]
 
                 ;Remove fav
                 [ui/custom-header 4 "Remove a subreddit"]
-                [ui/custom-select-input (r/atom (seq @subs)) remSubNameAtom]
-                [ui/custom-button "Remove" #(rf/dispatch [:subreddit-removed @remSubNameAtom])]])))
+                [ui/custom-select-input subs remSubNameAtom]
+                [ui/custom-button "Remove" #(rf/dispatch [:reddit-removed-subreddit @remSubNameAtom])]])))
 
 
 (defn subreddit-main []
