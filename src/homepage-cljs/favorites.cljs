@@ -75,7 +75,7 @@
                     (fn [] (reset! removeFavOptionsAtom (get-favs @removeCateAtom)))]
                 [ui/custom-select-input removeFavOptionsAtom removeFavAtom]
                 [ui/custom-button "Remove Favorite"
-                    #(rf/dispatch [:favorite-link-removed @removeCateAtom @removeFavAtom])]
+                    #(rf/dispatch [:favorite2-link-removed @removeCateAtom @removeFavAtom])]
 
                 ;Remove category
                 [ui/custom-header 4 "Remove a Category"]
