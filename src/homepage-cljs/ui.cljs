@@ -18,8 +18,9 @@
                             :margin (str item-v-margin "px " (/ (- 100 item-relative-w) 2) "%" )
                             :color style/col-dark-gray}
                     :on-change #(do (reset! dataAtom (-> % .-target .-value))
-                                    (when-not (nil? extraFunc) (extraFunc)))}
+                                    (when-not (nil? extraFunc) (extraFunc)))
                     :defaultValue @dataAtom
+                    :value @dataAtom}
             (for [item @itemsAtom] ^{:key item} [:option item])]))
 
 
