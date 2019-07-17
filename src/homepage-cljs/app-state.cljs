@@ -324,10 +324,6 @@
             (update-db-and-save true #(utils/dissoc-in db [:favs cat] nam)))))
 
 
-
-(defn remove-vec [vec item]
-    (into [] (remove #{item} vec)))
-
 ;rss
 (rf/reg-event-db :rss-selected-changed
     (fn [db [_ newRss]]

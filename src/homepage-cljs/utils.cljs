@@ -100,3 +100,5 @@
 
 
 
+(defn remove-vec [vec item]
+    (into [] (remove #{item} vec)))
