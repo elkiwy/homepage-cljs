@@ -1,24 +1,38 @@
 * What is homepage-cljs?
   
-  This is a simple starting project I made use to learn Clojurescript and React.
-  The main concept is to have a homepage where I can store and access
-  easily all my bookmarks, browse quickly some subreddit, read rss
-  feeds, and add more functionality down the road when I found
-  something that could be useful to have in a homepage.
+  This is a simple project I made to learn ~Clojurescript~ and ~React~.
   
-  Homepage-cljs can optionally store the user's data on the cloud
-  (temporary on a sub-domain of my website), so the user can access to
+  The main concept is to be a homepage where I can store and access
+  easily all my bookmarks, browse quickly some subreddits, read rss
+  feeds, and use other utilities that I'll add in later stages when I find
+  something that could be useful to have in a homepage like this.
+  
+  *Homepage-cljs* can optionally store the user's data on a backend server
+  (temporary hosted on a sub-domain of my website), so the user can access to
   its homepage between different computers and devices (I'm already
   working on a mobile client for it called homepage-native with
   Clojurescript and React native).
   
   The project started as a personal one, but then I decided to let it
-  available to everyone here on GitHub so anyone can give me feedback
-  about it or simply enjoy it.
+  available to everyone here on GitHub so anyone can give me feedback,
+  study it to learn Clojurescript and React, or simply enjoy it using
+  it as a homepage.
+  
+** What's already in it
+   Currently the project has 4 different sections:
+   - The favorites page, where you can add bookmarks organized in separate sections and have them all displayed nicely in front of you.
+   - The reddit page, where you can add your favorites subreddits and browse the hottest post in that subreddit in a simple and minimal fashion.
+   - The rss page, where you can fetch your rss feeds and read them directly in the page.
+   - The account page, where you can sign/log in to be able to sync your data with the backend.
+  
+** What's planned 
+   Here are some of the ideas to be developed in the near future (the list can grow any time):
+   - A deadline/reminder page where you can add all your deadlines/appointment and have them all displayed ordered by the time distance from now and have a count down for each reminder
+   - An improved and extended reddit page where you can read and comment posts
+   - A custom host for the backend server in order to use your own trusted server to sync your data 
   
   
-  
-
+   
 
 
 * Development mode
