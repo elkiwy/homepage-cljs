@@ -142,11 +142,13 @@
     (fn [db [_ new-db full-replace?]]
         (let [cp (:page-current db)]
             (if full-replace?
-                (update-db-and-save false
-                    #(assoc new-db :page-current (:page-current new-db)))
+                (update-db-and-save true (fn [] new-db))
                 (update-db-and-save false
                     #(assoc new-db :page-current cp))))))
 
+(rf/reg-event-db :replace-db-no-sync
+    (fn [db [_ new-db]]
+        (update-db-and-save false (fn [] new-db))))
 
 (rf/reg-event-db :page-changed
     (fn [db [_ newPage]]
@@ -163,24 +165,52 @@
 
 ; --------------------------------------
 ; Favorites
+(defn get-categories-names [db]
+    (mapv #(utils/deurlizeString (:name %)) (get-in db [:favorites :categories])))
+
+
+(defn in-vector? [v item]
+    (not (nil? (some #(= item %) v))))
+
+(defn alert-and-return [message db] 
+    (js/alert message)
+    db)
+
+
+
 (rf/reg-event-db :favorite2-category-added
     (fn [db [_ name]]
-        (let [nam (utils/urlizeString name)
-              categories (get-in db [:favorites :categories])
-              ind (count categories)
-              newCategories (conj categories {:name nam :order (inc ind) :links []})]
-            (update-db-and-save true
-                #(assoc-in db [:favorites :categories] (vec newCategories))))))
+        (cond
+            ;Category name already exists
+            (in-vector? (get-categories-names db) name)
+                (alert-and-return (str "A category named \"" name "\" already exists.") db)
+            ;Success case
+            :else 
+                (let [nam (utils/urlizeString name)
+                    categories (get-in db [:favorites :categories])
+                    ind (count categories)
+                    newCategories (conj categories {:name nam :order (inc ind) :links []})]
+                    (update-db-and-save true
+                        #(assoc-in db [:favorites :categories] (vec newCategories)))))))
 
 (rf/reg-event-db :favorite2-link-added
     (fn [db [_ category name link]]
-        (let [nam (utils/urlizeString name)
-              cat (utils/urlizeString category)
-              lnk (utils/urlizeString link)
-              categories (get-in db [:favorites :categories])
-              cateIndex (utils/index categories #(= (:name %) cat))]
-            (update-db-and-save true
-                #(update-in db [:favorites :categories cateIndex :links] conj {:name nam :link lnk})))))
+        (let [categories (get-in db [:favorites :categories])
+              cateIndex (utils/index categories #(= (:name %) category))
+              links (get-in categories [cateIndex :links])
+              cateLinksNames (mapv #(utils/deurlizeString (:name %)) links)]
+            (cond
+                ;Duplicate name case
+                (in-vector? cateLinksNames name)
+                    (alert-and-return (str "A link named \"" name "\" already exists.") db)
+                ;Default case
+                :else
+                    (let [nam (utils/urlizeString name)
+                        cat (utils/urlizeString category)
+                        lnk (utils/urlizeString link)]
+                        (update-db-and-save true
+                            #(update-in db [:favorites :categories cateIndex :links]
+                                 conj {:name nam :link lnk})))))))
 
 (rf/reg-event-db :favorite2-category-removed
     (fn [db [_ name]]

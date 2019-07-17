@@ -9,6 +9,20 @@
               [homepage-cljs.app-state]))
 
 
+(defn migrate-v1-to-v2 []
+    (let [favs (map-indexed vector (seq (:favs @re-frame.db/app-db)))
+          link-fn (fn [o] {:name (name (first o)) :link (second o)})
+          cate-fn (fn [k] {:name (name (first (second k))) :order (first k)
+                          :links (mapv link-fn (seq (second (second k))))})
+          new-favs (mapv cate-fn favs)
+          new-db (assoc-in @re-frame.db/app-db [:favorites] {:categories new-favs})
+          new-db (dissoc new-db :favs)]
+        (if (and (not-empty favs) (not-empty new-favs))
+            (rf/dispatch-sync [:replace-db new-db true])
+            (js/alert "No migration needed, you don't have any old data"))))
+
+
+
 
 
 ; --------------------------------------------------------------------------------------------------------
@@ -81,7 +95,19 @@
                 [ui/custom-header 4 "Remove a Category"]
                 [ui/custom-select-input categories removeCategoryAtom]
                 [ui/custom-button "Remove Category"
-                    #(rf/dispatch [:favorite2-category-removed @removeCategoryAtom])]])))
+                    #(rf/dispatch [:favorite2-category-removed @removeCategoryAtom])]
+
+
+                [ui/custom-header 4 "Other"]
+                [ui/custom-button "Migrate from old config" #(migrate-v1-to-v2)]
+
+
+                ])))
+
+
+
+
+
 
 
 
