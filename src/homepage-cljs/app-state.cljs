@@ -233,6 +233,22 @@
                 #(update-in db [:favorites :categories cateIndex :links]
                        (fn [obj] (remove (fn [link] (= (:name link) nam)) obj)))))))
 
+(rf/reg-event-db :favorite2-categories-swapped
+    (fn [db [_ cat1 cat2]]
+           (let [cat1 (utils/urlizeString cat1)
+                 cat2 (utils/urlizeString cat2)
+                 categories (get-in db [:favorites :categories])
+                 cat1-ind (:order (first (filter #(= (:name %) cat1) categories)))
+                 cat2-ind (:order (first (filter #(= (:name %) cat2) categories)))
+                 cat1-vec-pos (utils/index categories #(= (:name %) cat1))
+                 cat2-vec-pos (utils/index categories #(= (:name %) cat2))
+                 categories-new (vec (assoc-in categories     [cat1-vec-pos :order] cat2-ind))
+                 categories-new (vec (assoc-in categories-new [cat2-vec-pos :order] cat1-ind))
+                 categories-new (vec (sort #(< (:order %1) (:order %2)) categories-new))]
+               (update-db-and-save true
+                   #(assoc-in db [:favorites :categories] categories-new)))))
+
+
 
 ; --------------------------------------
 ; Reddit

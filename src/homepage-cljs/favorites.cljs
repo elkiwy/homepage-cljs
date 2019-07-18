@@ -111,6 +111,18 @@
 
 
 
+(def swap-category1 (r/atom ""))
+
+(defn clicked-swap [cat]
+    (cond
+        (= @swap-category1 "")
+            (reset! swap-category1 cat)
+        (= @swap-category1 cat)
+            (reset! swap-category1 "")
+        :else
+            (do (rf/dispatch-sync [:favorite2-categories-swapped cat @swap-category1])
+                (reset! swap-category1 ""))))
+
 
 (defn favs-comp-category
     "React component to display a category block with all its links.
@@ -124,6 +136,16 @@
                 :style {:margin "10px" :width "250px"}
                 :onMouseEnter #(do (reset! wid 100))
                 :onMouseLeave #(do (reset! wid 0))}
+
+                (let [swapping? (= @swap-category1 catName)
+                      alpha (if swapping? 1 (/ @animWid 100.0))]
+                    [:div {:style {:position "absolute" :margin 8 :opacity alpha}}
+                        [:p {:style {:position "absolute" :margin-top 3 :margin-left 3
+                                     :color @style/col-accent1 :font-weight "800" :font-size 24
+                                     :text-align "center"}} "⇄" ]
+                        [:input {:style {:background-color "transparent" :position "relative"
+                                        :cursor "pointer" :border "none" :width 32 :height 32}
+                                 :type "button" :value "" :on-click #(clicked-swap catName)}]])
 
                 [:h3 {:class (style/text style/col-white 20 "800")
                     :style {:margin 0 :padding 16 :text-align "center"}}
