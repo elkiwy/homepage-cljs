@@ -141,8 +141,8 @@
                       alpha (if swapping? 1 (/ @animWid 100.0))]
                     [:div {:style {:position "absolute" :margin 8 :opacity alpha}}
                         [:p {:style {:position "absolute" :margin-top 3 :margin-left 3
-                                     :color @style/col-accent1 :font-weight "800" :font-size 24
-                                     :text-align "center"}} "⇄" ]
+                                     :color (if swapping? @style/col-accent2 @style/col-accent1)
+                                     :font-weight "800" :font-size 24 :text-align "center"}} "⇄" ]
                         [:input {:style {:background-color "transparent" :position "relative"
                                         :cursor "pointer" :border "none" :width 32 :height 32}
                                  :type "button" :value "" :on-click #(clicked-swap catName)}]])
