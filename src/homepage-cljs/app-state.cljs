@@ -145,7 +145,7 @@
     (fn [db [_ new-db full-replace?]]
         (let [cp (:page-current db)]
             (if full-replace?
-                (update-db-and-save true (fn [] new-db))
+                (update-db-and-save false (fn [] new-db))
                 (update-db-and-save false
                     #(assoc new-db :page-current cp))))))
 
