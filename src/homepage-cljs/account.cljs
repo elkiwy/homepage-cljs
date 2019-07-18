@@ -80,9 +80,8 @@
      and a `targetDb` as optional app-data to send to the cloud instead of the current loaded one."
     [usr psw logAtom targetDb]
     (reset! homepage-cljs.core/sync-icon-alpha 1)
-    (let [fullConfig (if (nil? targetDb) @rfdb/app-db targetDb)
-          slimConfig (update fullConfig :subreddits utils/discard-json)
-          base64     (b64/encodeString (str slimConfig))]
+    (let [config  (if (nil? targetDb) @rfdb/app-db targetDb)
+          base64  (b64/encodeString (str config))]
         (backend-post-request addUserConfig-endpoint {:user usr} {:password psw :config base64}
             (fn [responseBody]
                 (println "Updated config " (count base64))
