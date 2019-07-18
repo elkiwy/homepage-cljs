@@ -25,15 +25,18 @@
 
 (defn load-state []
     (if (nil? (reader/read-string (ru/get :page-current)))
-        (rf/dispatch-sync [:initialize])
-        (let [reddit       (reader/read-string (ru/get :reddit       "{:selected \"\" :subreddits []}"))
-              page-current (reader/read-string (ru/get :page-current ":Favorites"))
-              favorites    (reader/read-string (ru/get :favorites    "{:categories []}"))
-              account      (reader/read-string (ru/get :account      "{:name \"\" :pass \"\" :sync false}"))
-              rss          (reader/read-string (ru/get :rss          "{:selected \"\" :feeds {}}"))]
-            (rf/dispatch-sync [:replace-db {:page-current page-current :reddit reddit
-                                            :favorites favorites :account account
-                                            :rss rss} true]))))
+        (do (println "initialize config")
+            (rf/dispatch-sync [:initialize]))
+
+        (do (println "loaded config")
+            (let [reddit       (reader/read-string (ru/get :reddit     "{:selected \"\" :subreddits []}"))
+                page-current (reader/read-string (ru/get :page-current ":Favorites"))
+                favorites    (reader/read-string (ru/get :favorites    "{:categories []}"))
+                account      (reader/read-string (ru/get :account      "{:name \"\" :pass \"\" :sync false}"))
+                rss          (reader/read-string (ru/get :rss          "{:selected \"\" :feeds {}}"))]
+                (rf/dispatch-sync [:replace-db {:page-current page-current :reddit reddit
+                                                :favorites favorites :account account
+                                                :rss rss} true])))))
 
 
 
