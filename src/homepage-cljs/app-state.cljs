@@ -4,8 +4,14 @@
               [reagent.core :as r]
               [re-frame.core :as rf]
               [re-frame.db :as rfdb]
+              [goog.crypt.base64 :as b64]
               [reagent.cookies :as ru]))
 
+(defn local-storage-set [key val]
+    (.setItem (.-localStorage js/window) key val))
+
+(defn local-storage-get [key]
+    (.getItem (.-localStorage js/window) key))
 
 
 (defn app-db [] @rfdb/app-db)
@@ -15,28 +21,18 @@
     ([]
         (save-state @rfdb/app-db))
     ([data]
-        (when (not (nil? (:page-current data)))
-            (ru/set! :reddit       (pr-str (:reddit data)) {:max-age one-month})
-            (ru/set! :favorites    (pr-str (:favorites data)) {:max-age one-month})
-            (ru/set! :account      (pr-str (:account data)) {:max-age one-month})
-            (ru/set! :rss          (pr-str (:rss data)) {:max-age one-month})
-            (ru/set! :page-current (pr-str (:page-current data)) {:max-age one-month}))))
+        (println "Saving config to localStorage...")
+        (when-not (nil? (:page-current data))
+            (local-storage-set "app-db" (b64/encodeString (str data))))))
 
 
 (defn load-state []
-    (if (nil? (reader/read-string (ru/get :page-current)))
-        (do (println "initialize config")
-            (rf/dispatch-sync [:initialize]))
+    (if-let [saved-db-str (local-storage-get "app-db")]
+        (do (println "Loading config from localStorage...")
+            (rf/dispatch-sync [:replace-db (reader/read-string (b64/decodeString saved-db-str)) true]))
+        (do (println "Initializing an empty config...")
+            (rf/dispatch-sync [:initialize]))))
 
-        (do (println "loaded config")
-            (let [reddit       (reader/read-string (ru/get :reddit     "{:selected \"\" :subreddits []}"))
-                page-current (reader/read-string (ru/get :page-current ":Favorites"))
-                favorites    (reader/read-string (ru/get :favorites    "{:categories []}"))
-                account      (reader/read-string (ru/get :account      "{:name \"\" :pass \"\" :sync false}"))
-                rss          (reader/read-string (ru/get :rss          "{:selected \"\" :feeds {}}"))]
-                (rf/dispatch-sync [:replace-db {:page-current page-current :reddit reddit
-                                                :favorites favorites :account account
-                                                :rss rss} true])))))
 
 
 
