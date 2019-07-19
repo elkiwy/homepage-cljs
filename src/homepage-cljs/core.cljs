@@ -16,7 +16,6 @@
                 [cljs.core.async :refer [<!]]))
 
 
-(enable-console-print!)
 
 
 ;; -----------------------------------------------------------------------------------------------------
@@ -32,8 +31,6 @@
 
 
 
-
-
 ;; -----------------------------------------------------------------------------------------------------
 ;; Pages navigation
 (def navbar-width 128)
@@ -42,17 +39,14 @@
 (def pages {:Favorites favs/favs-main :Reddit reddit/subreddit-main :Rss rss/rss-main :Account account/account-main})
 
 
-
 (defn navbar
     "React component to display the left sidebar containing the navigation items."
     [cp]
     [:div {:class (style/background) :style {:position "absolute" :top 0 :left 0
            :width navbar-width :height "100%" :padding-top 128} }
-
         ;App version
         [ui/custom-header 4 (format-info info) {:position "fixed" :font-size 14
                                                 :bottom 0 :left 0 :width navbar-width :color style/col-white}]
-
         ;Navbar items
         (doall (for [page pages] ^{:key (name (first page))}
             [:input {:class (style/text-button style/col-white 12 "800")
@@ -62,13 +56,10 @@
 
 
 
-
-
 ;; -----------------------------------------------------------------------------------------------------
 ;; Root controller
 
 (def sync-icon-alpha (r/atom 0))
-
 
 (defn main-page
     "React component to hold all the other controllers"
@@ -94,16 +85,21 @@
 
 
 
-
-
 ;; -----------------------------------------------------------------------------------------------------
 ;; Initialize app
-(defn mount-root []
+
+(enable-console-print!)
+
+(defn mount-root
+    "Render root function."
+    []
     (homepage-cljs.app-state/load-state)
     (account/try-download-state)
     (r/render [main-page] (.getElementById js/document "app")))
 
-(defn init! []
+(defn init!
+    "Main react root function."
+    []
     (mount-root))
 
 
