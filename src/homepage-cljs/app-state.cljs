@@ -7,17 +7,26 @@
               [goog.crypt.base64 :as b64]
               [reagent.cookies :as ru]))
 
-(defn local-storage-set [key val]
+;; -----------------------------------------------------------------------------------------------------
+;; Utility functions
+
+(defn local-storage-set
+    "Write a value `val` with a key `key` into the localStorage."
+    [key val]
     (.setItem (.-localStorage js/window) key val))
 
-(defn local-storage-get [key]
+(defn local-storage-get
+    "Retrieve a value with a key `key` from the localStorage."
+    [key]
     (.getItem (.-localStorage js/window) key))
 
+(defn app-db
+    "[TO CLEAN] Gets the current config"
+    []
+    @rfdb/app-db)
 
-(defn app-db [] @rfdb/app-db)
-
-(def one-month (* 60 60 24 30))
 (defn save-state
+    "Saves the config into the localStorage."
     ([]
         (save-state @rfdb/app-db))
     ([data]
@@ -25,17 +34,43 @@
         (when-not (nil? (:page-current data))
             (local-storage-set "app-db" (b64/encodeString (str data))))))
 
-
-(defn load-state []
+(defn load-state
+    "Loads the config stored in the localStorage or initialize it."
+    []
     (if-let [saved-db-str (local-storage-get "app-db")]
         (do (println "Loading config from localStorage...")
             (rf/dispatch-sync [:replace-db (reader/read-string (b64/decodeString saved-db-str)) true]))
         (do (println "Initializing an empty config...")
             (rf/dispatch-sync [:initialize]))))
 
+(defn update-db-and-save
+    "Executes a function, and return the result after sending the new config to the backend if the `sync` flag is active"
+    [sync fn]
+    (let [result (fn)]
+        (save-state result)
+        (when (= sync true)
+            (homepage-cljs.account/updateConfig result))
+        result))
+
+(defn get-categories-names
+    "[TO CLEAN] Retrieves the categories vector from a `db`."
+    [db]
+    (mapv #(utils/deurlizeString (:name %)) (get-in db [:favorites :categories])))
+
+(defn in-vector?
+    "Checks if an `item` is inside the vector `v`."
+    [v item]
+    (not (nil? (some #(= item %) v))))
+
+(defn alert-and-return
+    "Shows an alert and returns the `db`."
+    [message db] 
+    (js/alert message)
+    db)
 
 
 
+;; -----------------------------------------------------------------------------------------------------
 ;; -----------------------------------------------------------------------------------------------------
 ;; DB Subscriptions
 
@@ -105,28 +140,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
+;; -----------------------------------------------------------------------------------------------------
 ;; -----------------------------------------------------------------------------------------------------
 ;; Events
-
-(defn update-db-and-save
-    "Executes a function, and return the result after sending the new config to the backend if the `sync` flag is active"
-    [sync fn]
-    (let [result (fn)]
-        (save-state result)
-        (when (= sync true)
-            (homepage-cljs.account/updateConfig result))
-        result))
-
 
 ; --------------------------------------
 ; Utility
@@ -162,20 +178,9 @@
         (update-db-and-save true
             #(assoc db :account {:name name :pass pass :sync sync}))))
 
+
 ; --------------------------------------
 ; Favorites
-(defn get-categories-names [db]
-    (mapv #(utils/deurlizeString (:name %)) (get-in db [:favorites :categories])))
-
-
-(defn in-vector? [v item]
-    (not (nil? (some #(= item %) v))))
-
-(defn alert-and-return [message db] 
-    (js/alert message)
-    db)
-
-
 
 (rf/reg-event-db :favorite2-category-added
     (fn [db [_ name]]
@@ -245,7 +250,6 @@
                    #(assoc-in db [:favorites :categories] categories-new)))))
 
 
-
 ; --------------------------------------
 ; Reddit
 (rf/reg-event-db :reddit-selected-changed
@@ -310,6 +314,9 @@
 
 ;EXAMPLE:
 ;   {:categories [{:name "Social" :order 1 :links [{:name "Facebook" :link "..."} {:name "Linkedin" :link "..."}]} {:name "Relax" :order 2 :links [{:name "Youtube"  :link "..."}]}]}
+
+
+
 
 
 ; ------------------------------------------------------------
