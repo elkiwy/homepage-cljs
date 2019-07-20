@@ -146,6 +146,9 @@
                            :padding "0px 20%"}}
                 ;Register
                 [ui/custom-header 2 "Account" {:color style/col-black}]
+
+                [:p {:class (style/text style/col-black 8 "400") :style {:text-align "justify" :line-height 1.5}} "The account will automatically store your configuration data into a database in the cloud.\nYou, and only you, will access your own data and your password will be hashed before being stored."]
+
                 [ui/custom-text-input "Username" usernameAtom]
                 [ui/custom-text-input "Password" passwordAtom true]
                 [ui/custom-button "Create an account" #(addConfig @usernameAtom @passwordAtom logAtom nil)
