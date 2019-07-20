@@ -183,7 +183,8 @@
                     [account-without-account account logAtom])
 
                 ;Debug log atom
-                [:div [:p @logAtom]]])))
+                ;[:div [:p @logAtom]]
+                ])))
 
 
 
