@@ -22,17 +22,14 @@ Here are some of the ideas to be developed in the near future (the list can grow
 - A custom host for the backend server in order to use your own trusted server to sync your data	 
    
 # Instructions
-  In order to use and modify the code you need to have [Leinengen](https://leiningen.org)
-  installed on your machine.
+In order to use and modify the code you need to have [Leinengen](https://leiningen.org) installed on your machine.
   
 ## Build for production
-   To get the final build ready to be used you have to download the
-   source and call:
+To get the final build ready to be used you have to download the source and call:
    
-   ```lein clean && lein package```
+```lein clean && lein package```
    
-   *NB:* if you do not need to change the code by yourself you should
-   be able to find an updated build inside the `/public` folder.
+*NB:* if you do not need to change the code by yourself you should be able to find an updated build inside the `/public` folder.
   
   
 ## Build for development
@@ -55,9 +52,10 @@ There are many other ways to develop clojure. The simplest of them is:
 # Backend management
 Currently this project offers the chance to sync data with a backend through an account that you can create inside the app. The account creation is totally optional and it only give the user the chance to share the same config between multiple devices and browsers.
   
-No email is necessary and the create an account you will only have to give a username and a password, the backend will do all the magic.
+No email is necessary and to create an account you will only have to give a username and a password, the backend will do all the magic.
   
-The data is currently stored inside a db in a subdomain of [elkiwyart.com](https://www.elkiwyart.com) with the password being hashed with the sha256 algorithm.
+The data is stored inside a db in a subdomain of
+[elkiwyart.com](https://www.elkiwyart.com) with the password being hashed before being stored.
 	
 # Screenshots
 
