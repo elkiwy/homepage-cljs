@@ -22,7 +22,7 @@ Here are some of the ideas to be developed in the near future (the list can grow
 - A custom host for the backend server in order to use your own trusted server to sync your data	 
    
 # Instructions
-  In order to use and modify the code you need to have [[https://leiningen.org][Leinengen]]
+  In order to use and modify the code you need to have [Leinengen](https://leiningen.org)
   installed on your machine.
   
 ## Build for production
@@ -36,7 +36,7 @@ Here are some of the ideas to be developed in the near future (the list can grow
   
   
 ## Build for development
-I personally use Emacs with the wonderful [[https://github.com/clojure-emacs/cider][Cider]] package. If you are familiar with Emacs (Or you are willing to learn it) I highly recommend it.
+I personally use Emacs with the wonderful [Cider](https://github.com/clojure-emacs/cider) package. If you are familiar with Emacs (Or you are willing to learn it) I highly recommend it.
    
 ### Cider
 To start with cider you have to:
@@ -57,7 +57,7 @@ Currently this project offers the chance to sync data with a backend through an 
   
 No email is necessary and the create an account you will only have to give a username and a password, the backend will do all the magic.
   
-The data is currently stored inside a db in a subdomain of [[https://www.elkiwyart.com][elkiwyart.com]] with the password being hashed with the sha256 algorithm.
+The data is currently stored inside a db in a subdomain of [elkiwyart.com](https://www.elkiwyart.com) with the password being hashed with the sha256 algorithm.
 	
 # Screenshots
 
