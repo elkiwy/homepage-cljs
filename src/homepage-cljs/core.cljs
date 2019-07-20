@@ -89,7 +89,7 @@
                     "Synching..."]
 
                 ;Current page controller
-                [:div {:style {:margin-top "32px"}}
+                [:div {:style {:margin-top "32px" :margin-bottom "64px"}}
                     [(@currentPage pages)]]])))
 
 
