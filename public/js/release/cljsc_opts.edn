@@ -1,0 +1,1 @@
+{:infer-externs true, :output-dir "public/js/release", :closure-defines #:homepage-cljs.core{info "Thu Jul 18 23:03:53 2019 +0200\n"}, :externs ["closure-js/externs"], :optimizations :advanced, :output-to "public/js/app.js", :output-wrapper true, :libs ["closure-js/libs"], :pretty-print false}
