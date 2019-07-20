@@ -9,7 +9,12 @@
               [homepage-cljs.app-state]))
 
 
-(defn migrate-v1-to-v2 []
+; --------------------------------------------------------------------------------------------------------
+; Utility functions
+
+(defn migrate-v1-to-v2
+    "Migrates an old favorites version under :favs to the newer :favorites key."
+    []
     (let [favs (map-indexed vector (seq (:favs @re-frame.db/app-db)))
           link-fn (fn [o] {:name (name (first o)) :link (second o)})
           cate-fn (fn [k] {:name (name (first (second k))) :order (first k)
@@ -22,43 +27,46 @@
             (js/alert "No migration needed, you don't have any old data"))))
 
 
+(def swap-category1 (r/atom ""))
+(defn clicked-swap
+    "Triggered when a swap button is clicked."
+    [cat]
+    (cond
+        ;Select the first category to be swapped.
+        (= @swap-category1 "")
+            (reset! swap-category1 cat)
+        ;Deselect this category.
+        (= @swap-category1 cat)
+            (reset! swap-category1 "")
+        ;Swaps the current category with the saved one.
+        :else
+            (do (rf/dispatch-sync [:favorite2-categories-swapped cat @swap-category1])
+                (reset! swap-category1 ""))))
+
+
+(defn get-favs
+    "[TO CLEAN] Retrieves the favorites links from the db."
+    [category]
+    (map #(utils/deurlizeString (:name %))
+        @(rf/subscribe [:favorites2-category-links (utils/urlizeString category)])))
 
 
 
 ; --------------------------------------------------------------------------------------------------------
 ; UI elements
 
-;(defn get-favs [category]
-    ;(when-not (empty? category)
-        ;(let [cat (keyword (utils/urlizeString category))]
-            ;(map #(utils/deurlizeString (name (first %)))
-                ;(seq (get-in @(rf/subscribe [:favorites]) [cat]))))))
-
-(defn get-favs [category]
-    (map #(utils/deurlizeString (:name %))
-        @(rf/subscribe [:favorites2-category-links (utils/urlizeString category)])))
-                  
-
-    ;(rf/subscribe [:favorites2-category-links "Social"])
-    ;(:favorites @re-frame.db/app-db)
-
-
 ;Main input component
 (defn favs-comp-settings
     "React component to display the setting panel for favorites page"
     [size]
     (let [categories (rf/subscribe [:favorites2-categories])
-
           nameCatAtom (r/atom "")
-
           nameAtom (r/atom "")
           linkAtom (r/atom "")
           cateAtom (r/atom (first @categories))
-
           removeCateAtom (r/atom (first @categories))
           removeFavAtom  (r/atom (first (get-favs @removeCateAtom)))
           removeFavOptionsAtom (r/atom (get-favs @removeCateAtom))
-
           removeCategoryAtom (r/atom (first @categories))]
         (fn []
             ;Fix cateAtom not getting updated on fresh app start since favs was still empty
@@ -97,31 +105,10 @@
                 [ui/custom-button "Remove Category"
                     #(rf/dispatch [:favorite2-category-removed @removeCategoryAtom])]
 
-
+                ;Other
                 [ui/custom-header 4 "Other"]
-                [ui/custom-button "Migrate from old config" #(migrate-v1-to-v2)]
+                [ui/custom-button "Migrate from old config" #(migrate-v1-to-v2)]])))
 
-
-                ])))
-
-
-
-
-
-
-
-
-(def swap-category1 (r/atom ""))
-
-(defn clicked-swap [cat]
-    (cond
-        (= @swap-category1 "")
-            (reset! swap-category1 cat)
-        (= @swap-category1 cat)
-            (reset! swap-category1 "")
-        :else
-            (do (rf/dispatch-sync [:favorite2-categories-swapped cat @swap-category1])
-                (reset! swap-category1 ""))))
 
 
 (defn favs-comp-category
@@ -169,7 +156,6 @@
           categories (rf/subscribe [:favorites2-categories])]
         (fn []
             [:div 
-
                 ;Setting button
                 [utils/page-settings #(swap! sizeSetting utils/toggleScale)]
 
@@ -183,8 +169,6 @@
                 ;Favorites categories blocks
                 [:div {:style {:display "flex" :flex-wrap "wrap" :justify-content "center"}}
                     (for [category @categories] ^{:key category}
-                        [favs-comp-category category])]
-
-                ])))
+                        [favs-comp-category category])]])))
 
 
