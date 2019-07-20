@@ -157,7 +157,10 @@
                 ;Login
                 [ui/custom-button "Log in" #(getConfig @usernameAtom @passwordAtom logAtom)
                     {:color style/col-white} style/col-black]
-                [ui/custom-button "Reset data" #(do (rf/dispatch-sync [:replace-db {}]) (rf/dispatch-sync [:initialize]) (rf/dispatch-sync [:page-changed :Account]))
+
+                [ui/custom-button "Reset data" #(do (rf/dispatch-sync [:replace-db {}])
+                                                    (rf/dispatch-sync [:initialize])
+                                                    (rf/dispatch-sync [:page-changed :Account]))
                     {:color style/col-white} style/col-black]])))
 
 
